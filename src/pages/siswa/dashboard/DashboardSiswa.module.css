@@ -564,3 +564,21 @@
 .dropdownItem:hover {
   background-color: #fef2f2;
 }
+
+/* ================= INTEGRASI API: STATUS DAN ERROR ================= */
+.stateNote {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.inlineRetry {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #2b5c8f;
+  font-size: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}

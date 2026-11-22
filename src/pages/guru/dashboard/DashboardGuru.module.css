@@ -461,3 +461,26 @@
 @media (max-width: 768px) {
   .statsGrid { grid-template-columns: 1fr; }
 }
+
+/* ================= INTEGRASI API: STATUS DAN ERROR ================= */
+.stateNote {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.stateNote a {
+  color: #2b5c8f;
+  font-weight: 600;
+}
+
+.inlineRetry {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #2b5c8f;
+  font-size: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
