@@ -1,0 +1,16 @@
+diff a/src/data/dummyGuru.ts b/src/data/dummyGuru.ts	(rejected hunks)
+@@ -27,14 +27,6 @@ export const rekapKehadiranKelas = {
+   alpa: 0
+ };
+ 
+-export const daftarSiswaBimbinganLengkap = [
+-  { id: 1, nama: 'Andra Pratama', kelas: 'XII TKJ 1', statusPkl: 'Sedang berlangsung', tempat: 'PT KAI Persero', statusLaporan: 'Menunggu verifikasi', nilai: '88', file: 'Laporan_PKL_Andra.PDF' },
+-  { id: 2, nama: 'Nadia Putri', kelas: 'XII TKJ 1', statusPkl: 'Selesai', tempat: 'PT Telkom Indonesia', statusLaporan: 'Terverifikasi', nilai: '92', file: 'Laporan_PKL_Nadia.PDF' },
+-  { id: 3, nama: 'Rizky Ridho', kelas: 'XII TKJ 1', statusPkl: 'Sedang berlangsung', tempat: 'PT Telkom Indonesia', statusLaporan: 'Menunggu verifikasi', nilai: '85', file: 'Laporan_PKL_Rizky.PDF' },
+-  { id: 4, nama: 'Salsabila Rahma', kelas: 'XII TKJ 1', statusPkl: 'Sedang berlangsung', tempat: 'CV Kreatif Indonesia', statusLaporan: 'Belum diunggah', nilai: '-', file: null },
+-  { id: 5, nama: 'Fajar Ramadhan', kelas: 'XII TKJ 1', statusPkl: 'Sedang berlangsung', tempat: 'CV Kreatif Indonesia', statusLaporan: 'Menunggu verifikasi', nilai: '80', file: 'Laporan_PKL_Fajar.PDF' },
+-];
+-
+ export const daftarAbsensiKelas = [
+   { id: 1, nama: 'Andra Pratama', kelas: 'XII TKJ 1', kehadiran: 'Hadir', keterangan: 'Hadir' },
+   { id: 2, nama: 'Nadia Putri', kelas: 'XII TKJ 1', kehadiran: 'Hadir', keterangan: 'Hadir' },

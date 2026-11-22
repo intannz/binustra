@@ -1,0 +1,38 @@
+const TANGGAL_FORMAT = new Intl.DateTimeFormat('id-ID', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+const NILAI_FORMAT = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
+
+/**
+ * Format tanggal ke bahasa Indonesia, contoh "13 Juli 2026".
+ * Menerima YYYY-MM-DD (dibaca sebagai tanggal lokal agar tidak bergeser zona waktu)
+ * maupun ISO 8601 lengkap. Nilai kosong atau tidak valid menghasilkan "-".
+ */
+export function formatTanggal(value: string | null | undefined): string {
+  if (!value) return '-';
+
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  const date = dateOnly
+    ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+    : new Date(value);
+
+  return Number.isNaN(date.getTime()) ? '-' : TANGGAL_FORMAT.format(date);
+}
+
+/** Format nilai dengan koma desimal, contoh 87,6. Nilai null atau undefined menghasilkan "-" */
+export function formatNilai(value: number | null | undefined): string {
+  return typeof value === 'number' ? NILAI_FORMAT.format(value) : '-';
+}
+
+/** Inisial untuk avatar: huruf pertama kata pertama dan terakhir, "?" bila nama kosong */
+export function getInisial(nama: string | null | undefined): string {
+  const words = nama?.trim().split(/\s+/).filter(Boolean) ?? [];
+  if (words.length === 0) return '?';
+
+  const first = words[0].charAt(0);
+  const last = words.length > 1 ? words[words.length - 1].charAt(0) : '';
+  return `${first}${last}`.toUpperCase();
+}

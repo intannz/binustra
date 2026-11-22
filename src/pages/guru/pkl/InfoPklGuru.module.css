@@ -239,7 +239,9 @@
 .modalBox {
   background-color: var(--bg-card);
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
@@ -345,6 +347,196 @@
   cursor: pointer;
 }
 
-.submitBtn:hover {
+.submitBtn:hover:not(:disabled) {
   background-color: #0f172a;
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ================= STATE: LOADING, ERROR, STATUS ================= */
+.statusRevisi {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stateCell {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 32px 24px;
+}
+
+.alertError,
+.alertSuccess,
+.alertErrorBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.alertError,
+.alertErrorBar {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.alertSuccess {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.alertErrorBar {
+  margin: 0 24px 16px 24px;
+}
+
+.alertErrorBar span {
+  flex: 1;
+}
+
+.retryBtn,
+.linkBtn,
+.pageBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background-color: #ffffff;
+  color: var(--text-main);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.retryBtn:hover,
+.linkBtn:hover:not(:disabled),
+.pageBtn:hover:not(:disabled) {
+  background-color: #f1f5f9;
+}
+
+.linkBtn:disabled,
+.pageBtn:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 16px 24px 0 24px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ================= MODAL: REVIEW & NILAI ================= */
+.studentMeta {
+  margin: -8px 0 12px 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.fileLinkBox {
+  margin-bottom: 12px;
+}
+
+.fileLinkBox .fileName {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 24px 0 12px 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-light);
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.radioGroup {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.inputGroup textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.inputGroup textarea:focus {
+  border-color: #2b5c8f;
+}
+
+.inputGroup input[aria-invalid="true"],
+.inputGroup textarea[aria-invalid="true"] {
+  border-color: #dc2626;
+}
+
+.fieldError {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #b91c1c;
+}
+
+.helperText {
+  margin-bottom: 16px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.gridTwo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+}
+
+.noteBox {
+  padding: 12px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background-color: #f8fafc;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+.noteCatatan {
+  margin-top: 8px;
+  white-space: pre-wrap;
 }
