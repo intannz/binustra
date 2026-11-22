@@ -1,0 +1,426 @@
+/* Layout & Typography Dasar */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  font-family: 'Inter', sans-serif;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Header Navbar */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.breadcrumb strong {
+  color: var(--text-main);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.bellIcon {
+  font-size: 20px;
+  color: var(--text-main);
+}
+
+.avatar {
+  background-color: #bfdbfe;
+  color: #1e3a8a;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.contentWrapper {
+  padding: 32px 40px;
+  flex: 1;
+}
+
+/* Judul Halaman */
+.pageTitleBox {
+  margin-bottom: 32px;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.pageTitleBox h1 {
+  font-size: 28px;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.description {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Grid Bagian Atas */
+.gridTop {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.card {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+}
+
+.cardHeaderFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.cardIcon {
+  background-color: #bfdbfe;
+  color: #1e3a8a;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.badgeWarning {
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Info Tagihan Aktif */
+.tagihanInfo {
+  margin-bottom: 24px;
+  flex: 1;
+}
+
+.tagihanLabel {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.tagihanInfo h2 {
+  font-size: 32px;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.tagihanBulan {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.primaryBtn {
+  background-color: #1e2a45;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  background-color: #0f172a;
+}
+
+.primaryBtn:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.btnNote {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Info Rekening Pembayaran */
+.card h3 {
+  font-size: 18px;
+  color: var(--text-main);
+  margin-bottom: 12px;
+}
+
+.infoDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.bankBox {
+  background-color: #bfdbfe; /* Warna latar biru muda rekening */
+  padding: 16px 20px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.bankName {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e3a8a;
+  margin-bottom: 4px;
+}
+
+.accountNumber {
+  font-size: 20px;
+  letter-spacing: 1px;
+  color: #1e3a8a;
+  margin-bottom: 2px;
+}
+
+.accountName {
+  font-size: 11px;
+  color: #3b82f6;
+}
+
+.copyBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #1e3a8a;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.copyBtn:hover {
+  opacity: 0.8;
+}
+
+.instructionList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.instructionList p {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.instructionList strong {
+  color: var(--text-main);
+}
+
+/* Tabel Riwayat Tagihan */
+.cardFull {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  padding: 24px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.cardFull h3 {
+  padding: 0 24px;
+  margin-bottom: 24px;
+}
+
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  padding: 16px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 14px;
+}
+
+.table th {
+  background-color: #bfdbfe; /* Header tabel biru muda */
+  color: var(--text-main);
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.table td {
+  color: var(--text-main);
+}
+
+.statusLunas {
+  background-color: #dcfce7; /* Hijau pastel */
+  color: #166534;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusBelum {
+  background-color: #fef3c7; /* Kuning pastel */
+  color: #92400e;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ================= MODAL STYLES ================= */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalBox {
+  background-color: var(--bg-card);
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.modalHeader h2 {
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.dropzone {
+  background-color: #dbeafe; /* Biru muda sesuai desain modal */
+  border: 1px dashed #93c5fd;
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropzone:hover {
+  background-color: #bfdbfe;
+}
+
+.dropzoneIcon {
+  font-size: 32px;
+  color: #1e3a8a;
+  margin-bottom: 12px;
+}
+
+.dropzone p {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.dropzone span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.submitBtn {
+  background-color: #1e2a45;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.submitBtn:hover {
+  background-color: #0f172a;
+}

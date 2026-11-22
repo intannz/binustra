@@ -1,0 +1,289 @@
+/* Layout & Typography Dasar */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  font-family: 'Inter', sans-serif;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Header Navbar */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.breadcrumb strong {
+  color: var(--text-main);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.bellIcon {
+  font-size: 20px;
+  color: var(--text-main);
+}
+
+.avatar {
+  background-color: #bfdbfe;
+  color: #1e3a8a;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.contentWrapper {
+  padding: 32px 40px;
+  flex: 1;
+}
+
+/* Judul Halaman */
+.pageTitleBox {
+  margin-bottom: 32px;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.pageTitleBox h1 {
+  font-size: 28px;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.description {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Summary Grid */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.statCard {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.iconBoxBlue, .iconBoxGreen, .iconBoxYellow {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.iconBoxBlue {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+.iconBoxGreen {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.iconBoxYellow {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statLabel {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.statCard h3 {
+  font-size: 24px;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.statSub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Card Tabel */
+.cardFull {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  padding: 24px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.cardHeaderFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  margin-bottom: 20px;
+}
+
+.cardHeaderFlex h3 {
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+/* Search Box */
+.searchContainer {
+  position: relative;
+  width: 280px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: #2b5c8f;
+}
+
+/* Tabel */
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  padding: 16px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.table th {
+  background-color: #bfdbfe; /* Header biru pastel */
+  color: var(--text-main);
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.table td {
+  color: var(--text-main);
+}
+
+.table td strong {
+  font-weight: 600;
+}
+
+/* Badge Status */
+.statusLunas {
+  background-color: #dcfce7;
+  color: #166534;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusBelum {
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Tombol Aksi */
+.btnReminder {
+  background-color: #1e2a45;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btnReminder:hover:not(:disabled) {
+  background-color: #0f172a;
+}
+
+.btnReminder:disabled {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Responsivitas */
+@media (max-width: 1024px) {
+  .summaryGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .summaryGrid { grid-template-columns: 1fr; }
+  .cardHeaderFlex { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .searchContainer { width: 100%; }
+}

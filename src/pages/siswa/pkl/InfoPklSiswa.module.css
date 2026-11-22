@@ -1,0 +1,529 @@
+/* Layout Dasar */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  font-family: 'Inter', sans-serif;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Header & Judul */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.breadcrumb strong {
+  color: var(--text-main);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.bellIcon {
+  font-size: 20px;
+  color: var(--text-main);
+}
+
+.avatar {
+  background-color: #bfdbfe; /* Warna biru muda pastel avatar */
+  color: #1e3a8a;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.contentWrapper {
+  padding: 32px 40px;
+  flex: 1;
+}
+
+.pageTitleBox {
+  margin-bottom: 24px;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.pageTitleBox h1 {
+  font-size: 28px;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.description {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Grid System */
+.gridContainer {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.card {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.cardHeaderFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.cardHeaderFlex h3 {
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+/* Badges */
+.badgeSuccess {
+  background-color: #dcfce7;
+  color: #166534;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badgeWarning {
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Informasi Penempatan Detail */
+.companyProfile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.companyIcon {
+  background-color: #e0e7ff;
+  color: #3730a3;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.companyProfile h4 {
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+.companyProfile p {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.infoRow {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+}
+
+.infoLabel {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.infoValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+/* Progress Bar */
+.progressContainer {
+  background-color: #e0e7ff; /* Latar biru muda sesuai desain */
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.progressContainer p {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3730a3;
+  margin-bottom: 12px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: #10b981; /* Garis hijau */
+  border-radius: 4px;
+}
+
+/* Kanan: Upload File & Buttons */
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.fileIcon {
+  background-color: #e0e7ff;
+  color: #3730a3;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.fileItem h4 {
+  font-size: 15px;
+  color: var(--text-main);
+}
+
+.fileItem p {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.primaryButton {
+  width: 100%;
+  background-color: #1e2a45; /* Dark blue */
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.primaryButton:hover {
+  background-color: #0f172a;
+}
+
+.primaryButton .btnIcon {
+  font-size: 24px;
+}
+
+.primaryButton div {
+  text-align: center;
+}
+
+.primaryButton strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.primaryButton span {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.primaryButtonSmall {
+  width: 100%;
+  background-color: #1e2a45;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryButtonSmall:hover {
+  background-color: #0f172a;
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--border-light);
+  margin: 20px 0;
+}
+
+.scoreText {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  position: relative;
+}
+
+.timelineItem {
+  flex: 1;
+  position: relative;
+}
+
+.timelineLine, .timelineLineActive {
+  position: absolute;
+  top: 5px;
+  left: 12px;
+  right: -12px;
+  height: 2px;
+  z-index: 1;
+}
+
+.timelineLine {
+  background-color: var(--border-light);
+}
+
+.timelineLineActive {
+  background-color: #10b981; /* Garis hijau aktif */
+}
+
+.timelineDot, .timelineDotActive {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 16px;
+}
+
+.timelineDot {
+  background-color: var(--border-light);
+}
+
+.timelineDotActive {
+  background-color: #10b981;
+}
+
+.timelineDate {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.timelineItem h4 {
+  font-size: 14px;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.timelineDesc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ================= MODAL STYLES ================= */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4); /* Transparansi overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalBox {
+  background-color: var(--bg-card);
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.modalBoxLarge {
+  background-color: var(--bg-card);
+  width: 100%;
+  max-width: 600px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.modalHeader h2 {
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+/* Form Input & Dropzone */
+.inputGroup {
+  margin-bottom: 16px;
+}
+
+.inputGroup label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.inputGroup input, .inputGroup textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.inputGroup input:focus, .inputGroup textarea:focus {
+  border-color: #2b5c8f;
+}
+
+.dropzone {
+  background-color: #dbeafe; /* Biru muda sesuai gambar desain modal */
+  border: 1px dashed #93c5fd;
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropzone:hover {
+  background-color: #bfdbfe;
+}
+
+.dropzoneIcon {
+  font-size: 32px;
+  color: #1e3a8a;
+  margin-bottom: 12px;
+}
+
+.dropzone p {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.dropzone span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.submitBtn {
+  background-color: #1e2a45;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.submitBtn:hover {
+  background-color: #0f172a;
+}

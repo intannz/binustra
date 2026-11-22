@@ -1,0 +1,350 @@
+/* Layout & Typography Dasar */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  font-family: 'Inter', sans-serif;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Header Navbar */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.breadcrumb strong {
+  color: var(--text-main);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.bellIcon {
+  font-size: 20px;
+  color: var(--text-main);
+}
+
+.avatar {
+  background-color: #bfdbfe;
+  color: #1e3a8a;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.contentWrapper {
+  padding: 32px 40px;
+  flex: 1;
+}
+
+/* Judul Halaman */
+.pageTitleBox {
+  margin-bottom: 32px;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.pageTitleBox h1 {
+  font-size: 28px;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.description {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Tabel Card */
+.cardFull {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  padding: 24px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.cardFull h3 {
+  padding: 0 24px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+/* Search Bar */
+.searchContainer {
+  position: relative;
+  margin: 0 24px 24px 24px;
+  width: 300px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  border-color: #2b5c8f;
+}
+
+/* Tabel */
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th, .table td {
+  padding: 16px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 14px;
+}
+
+.table th {
+  background-color: #bfdbfe; /* Biru pastel untuk header tabel */
+  color: var(--text-main);
+  font-weight: 600;
+  border-bottom: none;
+}
+
+.table td {
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.table td strong {
+  font-weight: 600;
+}
+
+.tableSub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Status Badges */
+.statusTerverifikasi {
+  background-color: #dcfce7;
+  color: #166534;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusMenunggu {
+  background-color: #fef3c7;
+  color: #92400e;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusBelum {
+  background-color: #ffedd5;
+  color: #9a3412;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Button Tinjau */
+.tinjauBtn {
+  background-color: #dcfce7; /* Hijau muda */
+  color: #166534; /* Teks hijau tua */
+  border: none;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tinjauBtn:hover:not(:disabled) {
+  background-color: #bbf7d0;
+}
+
+.tinjauBtn:disabled {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* ================= MODAL STYLES ================= */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalBox {
+  background-color: var(--bg-card);
+  width: 100%;
+  max-width: 480px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.modalHeader h2 {
+  font-size: 18px;
+  color: var(--text-main);
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.studentNameDisplay {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 12px;
+}
+
+.fileLinkBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background-color: #f8fafc;
+}
+
+.fileIcon {
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+.fileLinkBox span {
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.inputGroup {
+  margin-bottom: 16px;
+}
+
+.inputGroup label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.inputGroup input:focus {
+  border-color: #2b5c8f;
+}
+
+.modalFooter {
+  display: flex;
+  margin-top: 24px;
+}
+
+.submitBtn {
+  width: 100%;
+  background-color: #1e2a45;
+  color: #ffffff;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.submitBtn:hover {
+  background-color: #0f172a;
+}
