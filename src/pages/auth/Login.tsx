@@ -1,48 +1,55 @@
 // src/pages/auth/Login.tsx
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { FiEye, FiEyeOff, FiHeadphones } from 'react-icons/fi';
 import styles from './Login.module.css';
 
-// Import data dummy
-import { dummyUsers } from '../../data/dummyUsers';
+import { useAuth } from '../../hooks/useAuth';
+import { isApiError } from '../../services/api';
+import { getDashboardPath } from '../../utils/routes';
 
 // Sesuaikan path import dengan struktur foldermu
 import logo from '../../assets/logo.png';
 import ilustrasi from '../../assets/ilustrasi-siswa-smk.png';
 
+function getLoginErrorMessage(err: unknown): string {
+  if (isApiError(err)) {
+    if (err.code === 'UNAUTHORIZED') return 'Nomor Induk atau Kata Sandi salah!';
+    return err.message;
+  }
+  return 'Terjadi kesalahan saat masuk. Silakan coba lagi.';
+}
+
 export default function Login() {
-  const navigate = useNavigate();
+  const { login, isAuthenticated, role, sessionExpired } = useAuth();
   const [nomorInduk, setNomorInduk] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Sudah login (termasuk sesaat setelah login berhasil): langsung ke dashboard sesuai role
+  if (isAuthenticated) {
+    return <Navigate to={getDashboardPath(role)} replace />;
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
 
-    // DUMMY LOGIC: Mencari kecocokan data dari file dummyUsers.ts
-    const validUser = dummyUsers.find(
-      (user) => user.nomorInduk === nomorInduk && user.password === password
-    );
-
-    if (validUser) {
-      // Simpan sesi ke localStorage
-      localStorage.setItem('role', validUser.role);
-      localStorage.setItem('nama', validUser.nama);
-      
-      // Arahkan ke dashboard sesuai role
-      if (validUser.role === 'siswa') {
-        navigate('/siswa/dashboard');
-      } else if (validUser.role === 'guru') {
-        navigate('/guru/dashboard');
-      }
-    } else {
-      setError('Nomor Induk atau Kata Sandi salah!');
+    try {
+      await login({ nomorInduk, password });
+    } catch (err) {
+      setError(getLoginErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  // Pesan gagal login didahulukan, bila tidak ada tampilkan info sesi berakhir
+  const notice = error || (sessionExpired ? 'Sesi berakhir. Silakan masuk kembali.' : '');
 
   return (
     <div className={styles.container}>
@@ -60,7 +67,7 @@ export default function Login() {
             Senang melihatmu kembali! Akses informasi dan aktivitas akademikmu dalam satu portal.
           </p>
 
-          {error && <div className={styles.errorMessage}>{error}</div>}
+          {notice && <div className={styles.errorMessage}>{notice}</div>}
 
           <form onSubmit={handleLogin} className={styles.form}>
             <div className={styles.inputGroup}>
@@ -97,8 +104,8 @@ export default function Login() {
               </div>
             </div>
 
-            <button type="submit" className={styles.submitButton}>
-              MASUK
+            <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
+              {isSubmitting ? 'MEMPROSES...' : 'MASUK'}
             </button>
           </form>
 

@@ -9,19 +9,22 @@ import MonitoringTagihan from './pages/guru/keuangan/MonitoringTagihan';
 import InfoPklSiswa from './pages/siswa/pkl/InfoPklSiswa';
 import InfoPklGuru from './pages/guru/pkl/InfoPklGuru';
 import Login from './pages/auth/Login';
+import { useAuth } from './hooks/useAuth';
+import { getDashboardPath } from './utils/routes';
+import type { Role } from './types/portal.types';
 
-const ProtectedRoute = ({ children, allowedRole }: { children: ReactNode; allowedRole: string }) => {
-  const currentRole = localStorage.getItem('role');
+const ProtectedRoute = ({ children, allowedRole }: { children: ReactNode; allowedRole: Role }) => {
+  const { isAuthenticated, role } = useAuth();
 
-  if (!currentRole) return <Navigate to="/login" replace />;
-  if (currentRole !== allowedRole) return <Navigate to="/unauthorized" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (role !== allowedRole) return <Navigate to="/unauthorized" replace />;
 
   return <>{children}</>;
 };
 
 export default function App() {
-  const role = localStorage.getItem('role');
-  const defaultPath = role === 'guru' ? '/guru/dashboard' : role === 'siswa' ? '/siswa/dashboard' : '/login';
+  const { role } = useAuth();
+  const defaultPath = getDashboardPath(role);
 
   return (
     <Routes>

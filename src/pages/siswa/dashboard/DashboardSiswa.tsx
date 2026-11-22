@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Link, useNavigate } from 'react-router-dom';
 import Sidebar from '../../../components/layout/Sidebar';
 import Footer from '../../../components/layout/Footer';
+import { useAuth } from '../../../hooks/useAuth';
 import styles from './DashboardSiswa.module.css';
 
 // Import Dummy Data
@@ -12,9 +13,9 @@ import { studentProfile, pklData, absensiData, tagihanData, agendaData } from '.
 export default function DashboardSiswa() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const handleLogout = () => {
-    localStorage.removeItem('role');
-    localStorage.removeItem('nama');
+    logout();
     navigate('/login', { replace: true });
   };
 

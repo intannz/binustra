@@ -1,11 +1,13 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FiHome, FiBriefcase, FiCheckSquare, FiCreditCard, FiLogOut } from 'react-icons/fi';
+import { useAuth } from '../../hooks/useAuth';
 import styles from './Sidebar.module.css';
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const role = localStorage.getItem('role') === 'guru' ? 'guru' : 'siswa';
+  const { role: authRole, logout } = useAuth();
+  const role = authRole === 'guru' ? 'guru' : 'siswa';
   const links = [
     { path: `/${role}/dashboard`, label: 'Beranda', icon: FiHome },
     { path: `/${role}/pkl`, label: 'Praktik Kerja Lapangan', icon: FiBriefcase },
@@ -14,8 +16,7 @@ export default function Sidebar() {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('role');
-    localStorage.removeItem('nama');
+    logout();
     navigate('/login', { replace: true });
   };
 
