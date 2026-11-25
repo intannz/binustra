@@ -553,7 +553,7 @@ export default function InfoPklGuru() {
   else if (searchTerm.trim() !== '') emptyMessage = 'Tidak ada siswa yang cocok dengan pencarian.';
 
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} appLayout`}>
       <Sidebar />
 
       <main className={styles.mainContent}>

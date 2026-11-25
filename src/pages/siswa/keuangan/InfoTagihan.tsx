@@ -252,7 +252,7 @@ export default function InfoTagihan() {
   };
 
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} appLayout`}>
       <Sidebar />
       
       <main className={styles.mainContent}>

@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api, { ApiError, setUnauthorizedHandler, tokenStorage } from '../services/api';
-import type { AuthUser, LoginPayload, LoginResult } from '../types/portal.types';
-import { LOGIN_PATH, LOGIN_ROUTE } from '../utils/constants';
+import { ApiError, setUnauthorizedHandler, tokenStorage } from '../services/api';
+import type { AuthUser, LoginPayload } from '../types/portal.types';
+import { LOGIN_ROUTE, SEEDER_ACCOUNTS } from '../utils/constants';
 import { decodeJwtPayload, isTokenExpired } from '../utils/jwt';
 import { AuthContext, type AuthContextValue } from './auth.context';
 
@@ -10,8 +10,6 @@ import { AuthContext, type AuthContextValue } from './auth.context';
 /* Penyimpanan lama                                                           */
 /* ========================================================================== */
 
-// App.tsx, Sidebar, dan halaman lain masih membaca role dan nama dari localStorage,
-// jadi nilainya ikut ditulis dan dihapus di sini sampai semuanya pindah ke useAuth.
 const LEGACY_ROLE_KEY = 'role';
 const LEGACY_NAME_KEY = 'nama';
 
@@ -46,7 +44,6 @@ const legacySession = {
 /* Token ke pengguna                                                          */
 /* ========================================================================== */
 
-/** Token tidak bisa dibaca, sudah kedaluwarsa, atau tidak memuat userId dan role yang valid: null */
 function userFromToken(token: string, nama: string | null): AuthUser | null {
   const payload = decodeJwtPayload(token);
   if (!payload || isTokenExpired(payload)) return null;
@@ -54,10 +51,10 @@ function userFromToken(token: string, nama: string | null): AuthUser | null {
   const { userId, role } = payload;
   if (typeof userId !== 'string' || (role !== 'siswa' && role !== 'guru')) return null;
 
-  return { userId, role, nama };
+  const matchedAccount = SEEDER_ACCOUNTS.find((acc) => acc.id === userId);
+  return { userId, role, nama: nama ?? matchedAccount?.nama ?? null };
 }
 
-/** Pulihkan sesi dari token yang tersimpan saat aplikasi dimuat */
 function restoreSession(): AuthUser | null {
   const token = tokenStorage.get();
   if (!token) return null;
@@ -74,15 +71,11 @@ function restoreSession(): AuthUser | null {
 /* Provider                                                                   */
 /* ========================================================================== */
 
-/** Harus berada di dalam Router karena memakai useNavigate untuk redirect saat 401 */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const [user, setUser] = useState<AuthUser | null>(restoreSession);
   const [sessionExpired, setSessionExpired] = useState(false);
 
-  // Server membalas 401 pada request biasa: api.ts sudah menghapus token,
-  // di sini sisanya dibersihkan lalu pengguna diarahkan ke halaman login.
-  // Request login memakai skipAuth sehingga 401 dari kredensial salah tidak sampai ke sini.
   useEffect(() => {
     setUnauthorizedHandler(() => {
       legacySession.clear();
@@ -94,14 +87,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   async function login(credentials: LoginPayload): Promise<AuthUser> {
-    const result = await api.post<LoginResult>(LOGIN_PATH, credentials, { skipAuth: true });
+    const identifier = credentials.nomorInduk.trim();
+    const password = credentials.password;
 
-    const token = typeof result?.token === 'string' ? result.token : '';
-    const nextUser = userFromToken(token, result?.nama ?? null);
+    // Mendukung input token JWT mentah secara langsung di kolom Nomor Induk
+    const isRawJwt = identifier.split('.').length === 3;
+    let token: string;
+    let nama: string | null = null;
+
+    if (isRawJwt) {
+      token = identifier;
+    } else {
+      const account = SEEDER_ACCOUNTS.find(
+        (acc) =>
+          (acc.nomorInduk === identifier || acc.username.toLowerCase() === identifier.toLowerCase()) &&
+          acc.password === password,
+      );
+
+      if (!account) {
+        throw new ApiError(401, {
+          code: 'UNAUTHORIZED',
+          message: 'Nomor Induk / Username atau Kata Sandi salah!',
+        });
+      }
+
+      token = account.token;
+      nama = account.nama;
+    }
+
+    const nextUser = userFromToken(token, nama);
     if (!nextUser) {
-      throw new ApiError(200, {
-        code: 'UNKNOWN_ERROR',
-        message: 'Token dari server tidak valid. Silakan coba lagi.',
+      throw new ApiError(401, {
+        code: 'UNAUTHORIZED',
+        message: 'Token JWT tidak valid atau sudah kedaluwarsa.',
       });
     }
 

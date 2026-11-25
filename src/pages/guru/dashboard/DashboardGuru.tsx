@@ -131,7 +131,7 @@ export default function DashboardGuru() {
   const siswaStatNote = siswaApi.error ? 'Gagal memuat' : siswaReady ? 'Sedang Berjalan' : 'Memuat…';
 
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} appLayout`}>
       <Sidebar />
       
       <main className={styles.mainContent}>

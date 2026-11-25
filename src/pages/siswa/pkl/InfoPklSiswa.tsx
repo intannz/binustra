@@ -410,7 +410,7 @@ export default function InfoPklSiswa() {
   };
 
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} appLayout`}>
       <Sidebar />
 
       <main className={styles.mainContent}>

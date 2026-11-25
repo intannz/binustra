@@ -7,15 +7,15 @@ import styles from './Login.module.css';
 
 import { useAuth } from '../../hooks/useAuth';
 import { isApiError } from '../../services/api';
+import { SEEDER_ACCOUNTS, type SeederAccount } from '../../utils/constants';
 import { getDashboardPath } from '../../utils/routes';
 
-// Sesuaikan path import dengan struktur foldermu
 import logo from '../../assets/logo.png';
 import ilustrasi from '../../assets/ilustrasi-siswa-smk.png';
 
 function getLoginErrorMessage(err: unknown): string {
   if (isApiError(err)) {
-    if (err.code === 'UNAUTHORIZED') return 'Nomor Induk atau Kata Sandi salah!';
+    if (err.code === 'UNAUTHORIZED') return err.message || 'Nomor Induk atau Kata Sandi salah!';
     return err.message;
   }
   return 'Terjadi kesalahan saat masuk. Silakan coba lagi.';
@@ -29,7 +29,6 @@ export default function Login() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Sudah login (termasuk sesaat setelah login berhasil): langsung ke dashboard sesuai role
   if (isAuthenticated) {
     return <Navigate to={getDashboardPath(role)} replace />;
   }
@@ -48,7 +47,12 @@ export default function Login() {
     }
   };
 
-  // Pesan gagal login didahulukan, bila tidak ada tampilkan info sesi berakhir
+  const handleQuickFill = (account: SeederAccount) => {
+    setError('');
+    setNomorInduk(account.username);
+    setPassword(account.password);
+  };
+
   const notice = error || (sessionExpired ? 'Sesi berakhir. Silakan masuk kembali.' : '');
 
   return (
@@ -71,11 +75,11 @@ export default function Login() {
 
           <form onSubmit={handleLogin} className={styles.form}>
             <div className={styles.inputGroup}>
-              <label htmlFor="nomorInduk">Nomor Induk</label>
+              <label htmlFor="nomorInduk">Nomor Induk / Username</label>
               <input
                 type="text"
                 id="nomorInduk"
-                placeholder="Masukkan Nomor Induk"
+                placeholder="Contoh: 2324001 atau siswa1"
                 value={nomorInduk}
                 onChange={(e) => setNomorInduk(e.target.value)}
                 required
@@ -110,7 +114,27 @@ export default function Login() {
           </form>
 
           <div className={styles.divider}>
-            <span>atau</span>
+            <span>akun uji coba</span>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '12px' }}>
+            {SEEDER_ACCOUNTS.map((acc) => (
+              <button
+                key={acc.id}
+                type="button"
+                onClick={() => handleQuickFill(acc)}
+                style={{
+                  padding: '6px 10px',
+                  fontSize: '12px',
+                  borderRadius: '6px',
+                  border: '1px solid #d1d5db',
+                  background: '#f9fafb',
+                  cursor: 'pointer',
+                }}
+              >
+                {acc.nama.split(',')[0]} ({acc.role})
+              </button>
+            ))}
           </div>
 
           <div className={styles.supportInfo}>

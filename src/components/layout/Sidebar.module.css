@@ -1,122 +1,266 @@
 .sidebar {
-  width: 280px;
-  background-color: var(--sidebar-bg);
-  color: var(--text-white);
   display: flex;
+  flex: 0 0 264px;
   flex-direction: column;
-  height: 100vh;
+  width: 264px;
+  min-height: 100vh;
+  min-height: 100dvh;
   position: sticky;
   top: 0;
+  align-self: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: var(--text-white);
+  background-color: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
+  transition: width 0.2s ease, flex-basis 0.2s ease;
 }
 
-/* --- Brand / Logo --- */
+.collapsed {
+  flex-basis: 76px;
+  width: 76px;
+}
+
 .brand {
-  padding: 30px 24px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 90px;
+  padding: 20px 20px 16px 24px;
 }
 
 .brand h2 {
+  margin-bottom: 4px;
+  color: var(--text-white);
   font-size: 24px;
   font-weight: 700;
   letter-spacing: 1px;
-  margin-bottom: 4px;
+  white-space: nowrap;
 }
 
 .brand p {
-  font-size: 11px;
   color: var(--text-sidebar-inactive);
+  font-size: 11px;
   letter-spacing: 1.5px;
+  white-space: nowrap;
 }
 
-/* --- School Info Card --- */
-.schoolInfo {
-  background-color: var(--sidebar-card-bg);
-  margin: 0 20px 30px;
-  padding: 16px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.schoolIcon {
-  font-size: 24px;
-  color: var(--text-white);
+.collapseButton,
+.mobileToggle {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--text-sidebar-inactive);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.collapseButton {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 18px;
+}
+
+.collapseButton:hover {
+  color: var(--text-white);
+  background-color: var(--sidebar-hover);
+}
+
+.collapsed .brand {
+  justify-content: center;
+  padding-inline: 12px;
+}
+
+.collapsed .brand > div,
+.collapsed .schoolText,
+.collapsed .menuLabel,
+.collapsed .linkLabel {
+  display: none;
+}
+
+.schoolInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  margin: 0 16px 28px;
+  padding: 12px;
+  overflow: hidden;
+  background-color: var(--sidebar-card-bg);
+  border-radius: 8px;
+}
+
+.collapsed .schoolInfo {
+  justify-content: center;
+  margin-inline: 12px;
+  padding-inline: 0;
+}
+
+.schoolIcon {
+  display: flex;
+  flex: 0 0 24px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-white);
+  font-size: 22px;
+}
+
+.schoolText {
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .schoolName {
+  margin-bottom: 4px;
   font-size: 13px;
   font-weight: 600;
-  margin-bottom: 4px;
 }
 
 .schoolYear {
-  font-size: 11px;
   color: var(--text-sidebar-inactive);
+  font-size: 11px;
 }
 
-/* --- Menu Navigation --- */
 .menuLabel {
-  font-size: 11px;
-  color: var(--text-sidebar-inactive);
-  padding: 0 24px;
   margin-bottom: 12px;
+  padding: 0 24px;
+  color: var(--text-sidebar-inactive);
+  font-size: 11px;
   letter-spacing: 1px;
 }
 
 .nav {
   display: flex;
-  flex-direction: column;
   flex: 1;
+  flex-direction: column;
 }
 
-.nav a {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 24px;
-  color: var(--text-sidebar-inactive);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  border-left: 3px solid transparent;
-}
-
-.nav a:hover {
-  background-color: var(--sidebar-hover);
-  color: var(--text-white);
-}
-
-.active {
-  background-color: var(--sidebar-active) !important;
-  color: var(--text-white) !important;
-  border-left: 3px solid var(--text-white) !important;
-}
-
-.icon {
-  font-size: 18px;
-}
-
+.nav a,
 .logoutButton {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 14px 24px;
+  min-height: 48px;
+  padding: 12px 24px;
   color: var(--text-sidebar-inactive);
-  background: transparent;
-  border: 0;
-  border-top: 1px solid var(--sidebar-border);
   font: inherit;
   font-size: 14px;
+  font-weight: 500;
   text-align: left;
+  text-decoration: none;
+  border: 0;
+  border-left: 3px solid transparent;
+  background: transparent;
   cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
+.nav a:hover,
 .logoutButton:hover {
-  background-color: var(--sidebar-hover);
   color: var(--text-white);
+  background-color: var(--sidebar-hover);
+}
+
+.active {
+  color: var(--text-white) !important;
+  background-color: var(--sidebar-active) !important;
+  border-left-color: var(--text-white) !important;
+}
+
+.icon {
+  flex: 0 0 18px;
+  font-size: 18px;
+}
+
+.collapsed .nav a,
+.collapsed .logoutButton {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.logoutButton {
+  border-top: 1px solid var(--sidebar-border);
+  border-left: 0;
+}
+
+.mobileToggle,
+.overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar,
+  .collapsed {
+    position: fixed;
+    z-index: 1101;
+    inset: 0 auto 0 0;
+    width: min(280px, calc(100vw - 56px));
+    min-height: 100vh;
+    min-height: 100dvh;
+    flex-basis: auto;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.2s ease, visibility 0.2s ease;
+  }
+
+  .mobileOpen {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .mobileOpen .brand {
+    justify-content: space-between;
+    padding: 20px 20px 16px 24px;
+  }
+
+  .mobileOpen .brand > div,
+  .mobileOpen .schoolText,
+  .mobileOpen .menuLabel,
+  .mobileOpen .linkLabel {
+    display: block;
+  }
+
+  .mobileOpen .schoolInfo {
+    justify-content: flex-start;
+    margin-inline: 16px;
+    padding-inline: 12px;
+  }
+
+  .mobileOpen .nav a,
+  .mobileOpen .logoutButton {
+    justify-content: flex-start;
+    padding-inline: 24px;
+  }
+
+  .collapseButton {
+    display: none;
+  }
+
+  .mobileToggle {
+    position: fixed;
+    z-index: 1103;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    width: 40px;
+    height: 40px;
+    color: var(--text-main);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+    font-size: 20px;
+  }
+
+  .overlay {
+    position: fixed;
+    z-index: 1100;
+    inset: 0;
+    display: block;
+    background: rgba(15, 23, 42, 0.45);
+    border: 0;
+  }
 }

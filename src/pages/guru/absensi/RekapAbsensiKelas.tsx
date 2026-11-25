@@ -661,7 +661,7 @@ export default function RekapAbsensiKelas() {
   else if (rekapApi.error) emptyMessage = 'Data kehadiran kelas belum dapat ditampilkan.';
 
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} appLayout`}>
       <Sidebar />
       
       <main className={styles.mainContent}>

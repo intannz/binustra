@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
-import { FiBell, FiLogOut, FiMapPin, FiCalendar, FiUser, FiChevronRight, FiCheckCircle, FiBriefcase } from 'react-icons/fi';
+import { FiBell, FiMapPin, FiCalendar, FiUser, FiChevronRight, FiCheckCircle, FiBriefcase } from 'react-icons/fi';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Sidebar from '../../../components/layout/Sidebar';
 import Footer from '../../../components/layout/Footer';
 import styles from './DashboardSiswa.module.css';
@@ -190,13 +190,7 @@ function StateNote({ children, onRetry }: { children: ReactNode; onRetry?: () =>
 /* ========================================================================== */
 
 export default function DashboardSiswa() {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
-  };
+  const { user } = useAuth();
 
   const [bulan] = useState(() => toMonthValue(new Date()));
 
@@ -246,7 +240,7 @@ export default function DashboardSiswa() {
   const namaDepan = user?.nama?.trim().split(/\s+/)[0];
 
   return (
-    <div className={styles.layout}>
+    <div className={`${styles.layout} appLayout`}>
       <Sidebar />
       
       <main className={styles.mainContent}>
@@ -259,27 +253,8 @@ export default function DashboardSiswa() {
           <div className={styles.headerActions}>
             <FiBell className={styles.bellIcon} />
             
-            {/* Tombol Profil / Avatar yang bisa diklik */}
-            <div className={styles.profileDropdownContainer}>
-              <button
-                type="button"
-                className={styles.avatar} 
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                aria-label="Buka menu profil"
-                aria-expanded={isDropdownOpen}
-                aria-haspopup="menu"
-              >
-                {getInisial(user?.nama)}
-              </button>
-
-              {/* Menu Dropdown Logout yang muncul saat diklik */}
-              {isDropdownOpen && (
-                <div className={styles.dropdownMenu} role="menu">
-                  <button type="button" className={styles.dropdownItem} role="menuitem" onClick={handleLogout}>
-                    <FiLogOut /> Logout
-                  </button>
-                </div>
-              )}
+            <div className={styles.avatar} role="img" aria-label={`Profil ${user?.nama ?? 'Siswa'}`}>
+              {getInisial(user?.nama)}
             </div>
           </div>
         </header>
@@ -298,7 +273,6 @@ export default function DashboardSiswa() {
                 <strong>{user?.nama ?? 'Siswa'}</strong>
                 <span>Akun siswa</span>
               </div>
-              <button className={styles.logoutBtn} onClick={handleLogout}><FiLogOut /> LOGOUT</button>
             </div>
           </div>
 

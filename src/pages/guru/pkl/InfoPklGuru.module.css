@@ -540,3 +540,10 @@
   margin-top: 8px;
   white-space: pre-wrap;
 }
+
+@media (max-width: 900px) {
+  .gridTwo {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+  }
+}

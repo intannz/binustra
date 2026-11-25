@@ -604,3 +604,20 @@
 .saveSuccessText {
   line-height: 1.5;
 }
+
+@media (max-width: 900px) {
+  .gridTop {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .gridTwo {
+    grid-template-columns: 1fr;
+    row-gap: 12px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+}
