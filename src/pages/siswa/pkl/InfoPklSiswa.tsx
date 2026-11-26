@@ -1,10 +1,12 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import {
-  FiBell, FiChevronRight, FiBriefcase, FiUpload, FiFileText,
+  FiChevronRight, FiBriefcase, FiUpload, FiFileText,
   FiX, FiUploadCloud, FiAlertCircle, FiRefreshCw
 } from 'react-icons/fi';
 import Sidebar from '../../../components/layout/Sidebar';
 import Footer from '../../../components/layout/Footer';
+import NotificationBell from '../../../components/layout/NotificationBell';
+import ProfileMenu from '../../../components/layout/ProfileMenu';
 import styles from './InfoPklSiswa.module.css';
 
 import { useApi } from '../../../hooks/useApi';
@@ -17,7 +19,13 @@ import type {
   PklSiswa,
   StatusPkl,
 } from '../../../types/portal.types';
-import { formatNilai, formatTanggal, getInisial } from '../../../utils/formatter';
+import { formatNilai, formatTanggal } from '../../../utils/formatter';
+import {
+  getPengajuanMitra,
+  subscribePengajuanMitra,
+  tambahPengajuanMitra,
+  type PengajuanMitra,
+} from '../../../utils/pklMitraStorage';
 
 /* ========================================================================== */
 /* Konstanta & helper                                                         */
@@ -25,6 +33,13 @@ import { formatNilai, formatTanggal, getInisial } from '../../../utils/formatter
 
 /** Batas ukuran laporan PKL yang diterima server (S-PKL-3) */
 const MAX_REPORT_SIZE = 10 * 1024 * 1024;
+const EMPTY_MITRA_FORM = {
+  namaPerusahaan: '',
+  alamat: '',
+  bidang: '',
+  tanggalMulai: '',
+  tanggalSelesai: '',
+};
 
 const STATUS_PKL_LABEL: Record<StatusPkl, string> = {
   'Belum Dimulai': 'Belum dimulai',
@@ -118,6 +133,17 @@ function validateReportFile(file: File): string | null {
   if (file.type !== 'application/pdf') return 'Berkas harus berformat PDF.';
   if (file.size > MAX_REPORT_SIZE) return 'Ukuran berkas maksimal 10 MB.';
   return null;
+}
+
+function readMitraEntries(): { entries: PengajuanMitra[]; error: string | null } {
+  try {
+    return { entries: getPengajuanMitra(), error: null };
+  } catch (error) {
+    return {
+      entries: [],
+      error: error instanceof Error ? error.message : 'Data pengajuan mitra tidak dapat dibaca.',
+    };
+  }
 }
 
 interface UploadFailure {
@@ -257,7 +283,10 @@ export default function InfoPklSiswa() {
 
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isMitraModalOpen, setIsMitraModalOpen] = useState(false);
-  const [partnerSubmitted, setPartnerSubmitted] = useState(false);
+  const [mitraState, setMitraState] = useState(readMitraEntries);
+  const [mitraForm, setMitraForm] = useState(EMPTY_MITRA_FORM);
+  const [mitraSubmitError, setMitraSubmitError] = useState<string | null>(null);
+  const [mitraNotice, setMitraNotice] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -268,6 +297,23 @@ export default function InfoPklSiswa() {
   const pklNotFound = pkl.error?.code === 'PKL_NOT_FOUND';
   const pklData = pklNotFound ? undefined : pkl.data;
   const pklError = pkl.error !== null && !pklNotFound ? pkl.error : null;
+
+  useEffect(
+    () => subscribePengajuanMitra(() => setMitraState(readMitraEntries())),
+    [],
+  );
+
+  const pengajuanMitraSiswa = mitraState.entries.filter(
+    (entry) => entry.siswaId === user?.userId,
+  );
+  const pengajuanAktif = [...pengajuanMitraSiswa].reverse().find(
+    (entry) => entry.status === 'Menunggu' || entry.status === 'Disetujui',
+  );
+  const pengajuanDitolak = [...pengajuanMitraSiswa]
+    .reverse()
+    .find((entry) => entry.status === 'Ditolak');
+  const bisaAjukanMitra =
+    pklNotFound && !pkl.loading && pengajuanAktif === undefined && mitraState.error === null;
 
   const nilaiError = nilai.error !== null && nilai.error.code !== 'PKL_NOT_FOUND' ? nilai.error : null;
   const nilaiData = nilai.error?.code === 'PKL_NOT_FOUND' ? undefined : nilai.data;
@@ -330,8 +376,35 @@ export default function InfoPklSiswa() {
 
   const handlePartnerSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setPartnerSubmitted(true);
-    setIsMitraModalOpen(false);
+
+    if (!user || !bisaAjukanMitra) {
+      setMitraSubmitError('Pengajuan mitra tidak dapat dikirim karena penempatan atau pengajuan aktif sudah tersedia.');
+      return;
+    }
+    if (mitraForm.tanggalSelesai < mitraForm.tanggalMulai) {
+      setMitraSubmitError('Tanggal selesai harus setelah tanggal mulai.');
+      return;
+    }
+
+    setMitraSubmitError(null);
+    try {
+      const pengajuan = tambahPengajuanMitra({
+        siswaId: user.userId,
+        namaSiswa: user.nama ?? 'Siswa',
+        ...mitraForm,
+      });
+      setMitraState((current) => ({
+        entries: [...current.entries, pengajuan],
+        error: null,
+      }));
+      setMitraForm(EMPTY_MITRA_FORM);
+      setIsMitraModalOpen(false);
+      setMitraNotice({ kind: 'success', text: 'Pengajuan mitra berhasil disimpan dan menunggu persetujuan guru.' });
+    } catch (error) {
+      setMitraSubmitError(
+        error instanceof Error ? error.message : 'Pengajuan mitra tidak dapat disimpan di browser ini.',
+      );
+    }
   };
 
   const renderPlacement = () => {
@@ -343,7 +416,7 @@ export default function InfoPklSiswa() {
         return (
           <div className={styles.stateBox}>
             <strong>Belum ada penempatan PKL</strong>
-            <p>Anda belum tercatat pada penempatan PKL. Hubungi guru pembimbing atau pihak sekolah.</p>
+            <p>Ajukan mitra PKL melalui bagian Mitra & Pengajuan PKL.</p>
           </div>
         );
       }
@@ -420,8 +493,8 @@ export default function InfoPklSiswa() {
             <span>Dashboard Siswa</span> <FiChevronRight /> <strong>Praktik Kerja Lapangan</strong>
           </div>
           <div className={styles.headerActions}>
-            <FiBell className={styles.bellIcon} />
-            <div className={styles.avatar}>{getInisial(user?.nama)}</div>
+            <NotificationBell />
+            <ProfileMenu />
           </div>
         </header>
 
@@ -432,6 +505,21 @@ export default function InfoPklSiswa() {
             <h1>Praktik Kerja Lapangan</h1>
             <p className={styles.description}>Pantau PKL, laporan, dan penilaian.</p>
           </div>
+
+          {mitraNotice && (
+            <div
+              className={mitraNotice.kind === 'success' ? styles.alertSuccess : styles.alertError}
+              role={mitraNotice.kind === 'success' ? 'status' : 'alert'}
+            >
+              {mitraNotice.text}
+            </div>
+          )}
+          {mitraState.error && (
+            <div className={styles.alertError} role="alert">
+              <FiAlertCircle />
+              <span>{mitraState.error}</span>
+            </div>
+          )}
 
           {/* --- Main Grid --- */}
           <div className={styles.gridContainer}>
@@ -508,21 +596,103 @@ export default function InfoPklSiswa() {
               {/* Card Mitra */}
               <div className={styles.card}>
                 <div className={styles.cardHeaderFlex}>
-                  <h3>Mitra & Proposal PKL</h3>
-                  <span className={partnerSubmitted ? styles.badgeSuccess : styles.badgeWarning}>
-                    {partnerSubmitted ? 'Menunggu verifikasi' : 'Belum diajukan'}
-                  </span>
+                  <h3>Mitra & Pengajuan PKL</h3>
+                  {pklData && <span className={styles.badgeSuccess}>{STATUS_PKL_LABEL[pklData.status]}</span>}
+                  {!pklData && pengajuanAktif && (
+                    <span className={pengajuanAktif.status === 'Menunggu' ? styles.badgeWarning : styles.badgeSuccess}>
+                      {pengajuanAktif.status}
+                    </span>
+                  )}
+                  {!pklData && !pengajuanAktif && pengajuanDitolak && (
+                    <span className={styles.badgeDanger}>Ditolak</span>
+                  )}
                 </div>
-                <div className={styles.fileItem}>
-                  <div className={styles.fileIcon}><FiBriefcase /></div>
-                  <div>
-                    <h4>Ajukan mitra industri</h4>
-                    <p>Isi data mitra dan unggah proposal PKL (PDF)</p>
+
+                {pklData && (
+                  <>
+                    <div className={styles.companyProfile}>
+                      <div className={styles.companyIcon}><FiBriefcase /></div>
+                      <div>
+                        <h4>{pklData.industri.nama}</h4>
+                        <p>Penempatan resmi dari data sekolah</p>
+                      </div>
+                    </div>
+                    <div className={styles.infoList}>
+                      <div className={styles.infoRow}>
+                        <span className={styles.infoLabel}>Alamat mitra</span>
+                        <span className={styles.infoValue}>{pklData.industri.alamat}</span>
+                      </div>
+                      <div className={styles.infoRow}>
+                        <span className={styles.infoLabel}>Periode PKL</span>
+                        <span className={styles.infoValue}>
+                          {formatTanggal(pklData.periode.mulai)} - {formatTanggal(pklData.periode.selesai)}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {!pklData && pengajuanAktif && (
+                  <>
+                    <div className={styles.companyProfile}>
+                      <div className={styles.companyIcon}><FiBriefcase /></div>
+                      <div>
+                        <h4>{pengajuanAktif.namaPerusahaan}</h4>
+                        <p>{pengajuanAktif.bidang}</p>
+                      </div>
+                    </div>
+                    <div className={styles.infoList}>
+                      <div className={styles.infoRow}>
+                        <span className={styles.infoLabel}>Alamat mitra</span>
+                        <span className={styles.infoValue}>{pengajuanAktif.alamat}</span>
+                      </div>
+                      <div className={styles.infoRow}>
+                        <span className={styles.infoLabel}>Periode yang diajukan</span>
+                        <span className={styles.infoValue}>
+                          {formatTanggal(pengajuanAktif.tanggalMulai)} - {formatTanggal(pengajuanAktif.tanggalSelesai)}
+                        </span>
+                      </div>
+                      {pengajuanAktif.catatanGuru && (
+                        <div className={styles.infoRow}>
+                          <span className={styles.infoLabel}>Catatan guru</span>
+                          <span className={styles.infoValue}>{pengajuanAktif.catatanGuru}</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {!pklData && !pengajuanAktif && pengajuanDitolak && (
+                  <div className={styles.rejectedApplication}>
+                    <strong>{pengajuanDitolak.namaPerusahaan}</strong>
+                    <p>{pengajuanDitolak.catatanGuru || 'Pengajuan belum disetujui. Anda dapat mengajukan mitra lain.'}</p>
                   </div>
-                </div>
-                <button className={styles.primaryButtonSmall} onClick={() => setIsMitraModalOpen(true)}>
-                  <FiUpload /> Input mitra
-                </button>
+                )}
+
+                {pkl.loading && <p className={styles.stateNote} role="status">Memeriksa data penempatan resmi…</p>}
+                {pklError && <p className={styles.stateNote}>Form pengajuan mitra tidak tersedia sampai data PKL berhasil dimuat.</p>}
+
+                {bisaAjukanMitra && (
+                  <>
+                    <div className={styles.fileItem}>
+                      <div className={styles.fileIcon}><FiBriefcase /></div>
+                      <div>
+                        <h4>Ajukan mitra industri</h4>
+                        <p>Isi data perusahaan dan periode PKL untuk ditinjau guru.</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.primaryButtonSmall}
+                      onClick={() => {
+                        setMitraSubmitError(null);
+                        setIsMitraModalOpen(true);
+                      }}
+                    >
+                      <FiBriefcase /> Input Mitra
+                    </button>
+                  </>
+                )}
               </div>
 
             </div>
@@ -575,42 +745,74 @@ export default function InfoPklSiswa() {
       {/* 2. Modal Ajukan Mitra */}
       {isMitraModalOpen && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modalBoxLarge}>
+          <div className={styles.modalBoxLarge} role="dialog" aria-modal="true" aria-label="Input pengajuan mitra PKL">
             <div className={styles.modalHeader}>
-              <h2>Ajukan mitra & proposal PKL</h2>
-              <button className={styles.closeBtn} onClick={() => setIsMitraModalOpen(false)}>
+              <h2>Input mitra PKL</h2>
+              <button type="button" className={styles.closeBtn} onClick={() => setIsMitraModalOpen(false)} aria-label="Tutup">
                 <FiX />
               </button>
             </div>
             <form className={styles.modalBody} onSubmit={handlePartnerSubmit}>
               <div className={styles.inputGroup}>
                 <label htmlFor="nama-mitra">Nama mitra industri</label>
-                <input id="nama-mitra" type="text" placeholder="Contoh: PT Telkom Indonesia" required />
+                <input
+                  id="nama-mitra"
+                  type="text"
+                  placeholder="Contoh: PT Teknologi Nusantara"
+                  value={mitraForm.namaPerusahaan}
+                  onChange={(event) => setMitraForm((current) => ({ ...current, namaPerusahaan: event.target.value }))}
+                  required
+                />
               </div>
               <div className={styles.inputGroup}>
                 <label htmlFor="bidang-usaha">Bidang usaha</label>
-                <input id="bidang-usaha" type="text" placeholder="Contoh: Teknologi Informasi" required />
+                <input
+                  id="bidang-usaha"
+                  type="text"
+                  placeholder="Contoh: Teknologi Informasi"
+                  value={mitraForm.bidang}
+                  onChange={(event) => setMitraForm((current) => ({ ...current, bidang: event.target.value }))}
+                  required
+                />
               </div>
               <div className={styles.inputGroup}>
                 <label htmlFor="alamat-mitra">Alamat mitra</label>
-                <textarea id="alamat-mitra" placeholder="Alamat lengkap perusahaan" rows={3} required></textarea>
+                <textarea
+                  id="alamat-mitra"
+                  placeholder="Alamat lengkap perusahaan"
+                  rows={3}
+                  value={mitraForm.alamat}
+                  onChange={(event) => setMitraForm((current) => ({ ...current, alamat: event.target.value }))}
+                  required
+                />
               </div>
-              <div className={styles.inputGroup}>
-                <label htmlFor="kontak-pembimbing">Kontak pembimbing industri</label>
-                <input id="kontak-pembimbing" type="text" placeholder="Nama & nomor telepon" required />
-              </div>
-              <div className={styles.inputGroup}>
-                <label>Proposal PKL (PDF)</label>
-                <div className={styles.dropzone}>
-                  <FiUploadCloud className={styles.dropzoneIcon} />
-                  <p>Pilih berkas untuk diunggah</p>
-                  <span>Dokumen PDF</span>
-                  <input type="file" accept="application/pdf" required aria-label="Pilih proposal PKL dalam format PDF" />
+              <div className={styles.gridTwo}>
+                <div className={styles.inputGroup}>
+                  <label htmlFor="mitra-tanggal-mulai">Tanggal mulai</label>
+                  <input
+                    id="mitra-tanggal-mulai"
+                    type="date"
+                    value={mitraForm.tanggalMulai}
+                    onChange={(event) => setMitraForm((current) => ({ ...current, tanggalMulai: event.target.value }))}
+                    required
+                  />
+                </div>
+                <div className={styles.inputGroup}>
+                  <label htmlFor="mitra-tanggal-selesai">Tanggal selesai</label>
+                  <input
+                    id="mitra-tanggal-selesai"
+                    type="date"
+                    min={mitraForm.tanggalMulai}
+                    value={mitraForm.tanggalSelesai}
+                    onChange={(event) => setMitraForm((current) => ({ ...current, tanggalSelesai: event.target.value }))}
+                    required
+                  />
                 </div>
               </div>
+              {mitraSubmitError && <p className={styles.fieldError} role="alert">{mitraSubmitError}</p>}
               <div className={styles.modalFooter}>
                 <button type="submit" className={styles.submitBtn}>
-                  <FiFileText /> Kirim pengajuan
+                  <FiFileText /> Kirim pengajuan mitra
                 </button>
               </div>
             </form>

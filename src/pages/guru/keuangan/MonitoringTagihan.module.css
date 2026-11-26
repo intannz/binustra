@@ -169,6 +169,13 @@
   color: var(--text-main);
 }
 
+.cardSubtitle {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 /* Search Box */
 .searchContainer {
   position: relative;
@@ -275,6 +282,28 @@
   background-color: #f1f5f9;
   color: #94a3b8;
   cursor: not-allowed;
+}
+
+.copySuccess,
+.copyError {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 24px 16px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.copySuccess {
+  color: #166534;
+  background-color: #dcfce7;
+}
+
+.copyError {
+  color: #991b1b;
+  background-color: #fee2e2;
 }
 
 /* Responsivitas */

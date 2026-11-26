@@ -1,15 +1,18 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { 
-  FiBell, FiChevronRight, FiCreditCard, FiUpload, 
-  FiCopy, FiX, FiUploadCloud, FiFileText, FiAlertCircle, FiRefreshCw
+  FiChevronRight, FiCreditCard, FiUpload,
+  FiCopy, FiX, FiUploadCloud, FiFileText, FiAlertCircle, FiRefreshCw, FiClock, FiCheckCircle
 } from 'react-icons/fi';
 import Sidebar from '../../../components/layout/Sidebar';
 import Footer from '../../../components/layout/Footer';
+import NotificationBell from '../../../components/layout/NotificationBell';
+import ProfileMenu from '../../../components/layout/ProfileMenu';
 import styles from './InfoTagihan.module.css';
 
 import { useApi } from '../../../hooks/useApi';
 import { useAuth } from '../../../hooks/useAuth';
 import { isApiError } from '../../../services/api';
+import type { Pembayaran } from '../../../types/portal.types';
 import {
   getInfoPembayaran,
   getRingkasanTagihan,
@@ -17,7 +20,7 @@ import {
   uploadBuktiPembayaran,
 } from '../../../services/keuangan.service';
 import { describeError, toDateInputValue } from '../../../utils/absensi';
-import { formatRupiah, formatTanggal, getInisial } from '../../../utils/formatter';
+import { formatRupiah, formatTanggal } from '../../../utils/formatter';
 import {
   TAGIHAN_PAGE_SIZE,
   getNamaTagihan,
@@ -34,6 +37,42 @@ interface PaymentFailure {
   message: string;
   /** true bila data tagihan di layar sudah tidak sesuai server dan perlu dimuat ulang */
   staleState: boolean;
+}
+
+interface PendingPaymentsState {
+  payments: Record<string, Pembayaran>;
+  storageError: boolean;
+}
+
+function isPendingPayment(value: unknown): value is Pembayaran {
+  if (typeof value !== 'object' || value === null) return false;
+  const payment = value as Record<string, unknown>;
+  return (
+    typeof payment.id === 'string' &&
+    typeof payment.tagihanId === 'string' &&
+    typeof payment.nominal === 'number' &&
+    typeof payment.tanggalTransfer === 'string' &&
+    payment.status === 'menunggu' &&
+    typeof payment.diuploadPada === 'string'
+  );
+}
+
+function readPendingPayments(storageKey: string): PendingPaymentsState {
+  try {
+    const stored = localStorage.getItem(storageKey);
+    if (stored === null) return { payments: {}, storageError: false };
+
+    const parsed: unknown = JSON.parse(stored);
+    if (!Array.isArray(parsed)) return { payments: {}, storageError: true };
+
+    const payments: Record<string, Pembayaran> = {};
+    for (const value of parsed) {
+      if (isPendingPayment(value)) payments[value.tagihanId] = value;
+    }
+    return { payments, storageError: parsed.some((value) => !isPendingPayment(value)) };
+  } catch {
+    return { payments: {}, storageError: true };
+  }
 }
 
 /** Ubah kegagalan S-KEU-4 menjadi pesan siap tampil */
@@ -73,8 +112,11 @@ export default function InfoTagihan() {
   const [copyMessage, setCopyMessage] = useState('');
   const [notice, setNotice] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
-  // Bukti yang sudah terkirim pada sesi ini. Status "menunggu" tidak ada di daftar tagihan server
-  const [submittedIds, setSubmittedIds] = useState<string[]>([]);
+  const pendingPaymentStorageKey = `binustra_pending_payments:${user?.userId ?? 'unknown'}`;
+  const [pendingPaymentState, setPendingPaymentState] = useState(() =>
+    readPendingPayments(pendingPaymentStorageKey),
+  );
+  const submittedPayments = pendingPaymentState.payments;
 
   /* ---------- Form unggah bukti ---------- */
   const [selectedTagihanId, setSelectedTagihanId] = useState('');
@@ -91,8 +133,12 @@ export default function InfoTagihan() {
 
   // S-KEU-1 dipanggil tanpa filter status: Belum Lunas tidak mencakup Jatuh Tempo, jadi keduanya disaring di sini
   const belumDibayar = urutkanJatuhTempo(semuaTagihan.filter(isBelumDibayar), 'asc');
-  const perluBukti = belumDibayar.filter((item) => !submittedIds.includes(item.id));
-  const semuaMenunggu = belumDibayar.length > 0 && perluBukti.length === 0;
+  const perluBukti = belumDibayar.filter(
+    (item) => submittedPayments[item.id]?.status !== 'menunggu',
+  );
+  const adaBuktiMenunggu = belumDibayar.some(
+    (item) => submittedPayments[item.id]?.status === 'menunggu',
+  );
   const adaJatuhTempo = belumDibayar.some((item) => item.status === 'Jatuh Tempo');
 
   const infoNotFound = info.error?.status === 404;
@@ -101,7 +147,7 @@ export default function InfoTagihan() {
   const totalText = ringkasan.data ? formatRupiah(ringkasan.data.total) : ringkasan.loading ? '…' : '-';
 
   let badgeText = 'Belum dibayar';
-  if (semuaMenunggu) badgeText = 'Menunggu verifikasi';
+  if (adaBuktiMenunggu) badgeText = 'Menunggu verifikasi';
   else if (adaJatuhTempo) badgeText = 'Jatuh tempo';
 
   let tagihanLabel = 'Tidak ada tagihan';
@@ -134,8 +180,8 @@ export default function InfoTagihan() {
       .catch(() => setCopyMessage('Nomor rekening tidak dapat disalin. Silakan salin secara manual.'));
   };
 
-  const openUploadModal = () => {
-    const first = perluBukti[0];
+  const openUploadModal = (tagihanId?: string) => {
+    const first = perluBukti.find((item) => item.id === tagihanId) ?? perluBukti[0];
     if (!first) return;
 
     setSelectedTagihanId(first.id);
@@ -197,17 +243,24 @@ export default function InfoTagihan() {
     setIsUploading(true);
     setUploadError(null);
     try {
-      await uploadBuktiPembayaran({
+      const payment = await uploadBuktiPembayaran({
         tagihanId: target.id,
         nominal: nominalValue,
         tanggalTransfer,
         bukti,
       });
-      setSubmittedIds((current) => [...current, target.id]);
+      const nextPayments = { ...submittedPayments, [payment.tagihanId]: payment };
+      let storageError = false;
+      try {
+        localStorage.setItem(pendingPaymentStorageKey, JSON.stringify(Object.values(nextPayments)));
+      } catch {
+        storageError = true;
+      }
+      setPendingPaymentState({ payments: nextPayments, storageError });
       setIsUploadModalOpen(false);
       setNotice({
         kind: 'success',
-        text: `Bukti pembayaran ${getNamaTagihan(target)} berhasil dikirim dan menunggu verifikasi.`,
+        text: `Bukti ${getNamaTagihan(target)} terkirim. Menunggu verifikasi bendahara. Transfer ${formatTanggal(payment.tanggalTransfer)} sebesar ${formatRupiah(payment.nominal)}.`,
       });
     } catch (err) {
       const failure = toPaymentFailure(err);
@@ -262,8 +315,8 @@ export default function InfoTagihan() {
             <span>Dashboard Siswa</span> <FiChevronRight /> <strong>Keuangan</strong>
           </div>
           <div className={styles.headerActions}>
-            <FiBell className={styles.bellIcon} />
-            <div className={styles.avatar}>{getInisial(user?.nama)}</div>
+            <NotificationBell />
+            <ProfileMenu />
           </div>
         </header>
 
@@ -279,6 +332,15 @@ export default function InfoTagihan() {
             <div className={notice.kind === 'success' ? styles.alertSuccess : styles.alertError} role={notice.kind === 'success' ? 'status' : 'alert'}>
               {notice.kind === 'error' && <FiAlertCircle />}
               <span>{notice.text}</span>
+            </div>
+          )}
+
+          {pendingPaymentState.storageError && (
+            <div className={styles.alertError} role="alert">
+              <FiAlertCircle />
+              <span>
+                Status bukti menunggu verifikasi tidak dapat disimpan di browser ini. Bukti tetap terkirim ke server, tetapi tombol unggah mungkin aktif lagi setelah halaman dimuat ulang.
+              </span>
             </div>
           )}
 
@@ -310,7 +372,7 @@ export default function InfoTagihan() {
               </div>
               <button 
                 className={styles.primaryBtn} 
-                onClick={openUploadModal}
+                onClick={() => openUploadModal()}
                 disabled={perluBukti.length === 0}
               >
                 <FiUpload /> Unggah bukti pembayaran
@@ -329,7 +391,16 @@ export default function InfoTagihan() {
                 <p>1. Transfer sesuai nominal tagihan: <strong>{ringkasan.data ? formatRupiah(ringkasan.data.total) : '-'}</strong>.</p>
                 <p>2. Tulis keterangan: <strong>{user?.nama ? `${user.nama} dan kelas` : 'nama siswa dan kelas'}</strong>.</p>
                 <p>3. Unggah bukti pembayaran untuk diverifikasi.</p>
-                {infoData && <p>4. Atau bayar langsung di loket sekolah: <strong>{infoData.jadwalLoket}</strong>.</p>}
+              </div>
+              <div className={styles.flowInfo}>
+                <FiClock aria-hidden="true" />
+                <p>
+                  Bukti transfer diverifikasi oleh bagian Tata Usaha/Bendahara sekolah dalam 1 x 24 jam hari kerja. Status tagihan otomatis berubah menjadi Lunas setelah verifikasi selesai.
+                  {infoData && <> Jadwal loket: <strong>{infoData.jadwalLoket}</strong>.</>}
+                  <span className={styles.flowInfoNote}>
+                    Tagihan yang melewati tanggal jatuh tempo tetap dapat dibayarkan dan diunggah buktinya di sini. Jika terdapat kendala pembayaran atau keterlambatan lanjutan, silakan hubungi bagian Tata Usaha / Bendahara sekolah.
+                  </span>
+                </p>
               </div>
             </div>
 
@@ -345,12 +416,13 @@ export default function InfoTagihan() {
                     <th>Jenis tagihan</th>
                     <th>Nominal</th>
                     <th>Status</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {riwayat.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className={styles.stateCell} role="status">
+                      <td colSpan={4} className={styles.stateCell} role="status">
                         {tagihan.loading
                           ? 'Memuat tagihan…'
                           : tagihan.error
@@ -360,10 +432,13 @@ export default function InfoTagihan() {
                     </tr>
                   ) : (
                     riwayat.map((item) => {
-                      const menunggu = submittedIds.includes(item.id) && isBelumDibayar(item);
+                      const pembayaranMenunggu =
+                        submittedPayments[item.id]?.status === 'menunggu' && isBelumDibayar(item)
+                          ? submittedPayments[item.id]
+                          : undefined;
                       let statusClass = styles.statusBelum;
                       if (item.status === 'Lunas') statusClass = styles.statusLunas;
-                      else if (item.status === 'Jatuh Tempo' && !menunggu) statusClass = styles.statusTempo;
+                      else if (item.status === 'Jatuh Tempo' && !pembayaranMenunggu) statusClass = styles.statusTempo;
 
                       return (
                         <tr key={item.id}>
@@ -373,9 +448,40 @@ export default function InfoTagihan() {
                           </td>
                           <td>{formatRupiah(item.nominal)}</td>
                           <td>
-                            <span className={statusClass}>
-                              {menunggu ? 'Menunggu verifikasi' : item.status}
-                            </span>
+                            {pembayaranMenunggu ? (
+                              <div className={styles.pendingPayment}>
+                                <span className={styles.statusPending}>
+                                  Bukti Terkirim • Menunggu Verifikasi Bendahara
+                                </span>
+                                <span className={styles.pendingDetails}>
+                                  Transfer {formatTanggal(pembayaranMenunggu.tanggalTransfer)} · {formatRupiah(pembayaranMenunggu.nominal)}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className={statusClass}>{item.status}</span>
+                            )}
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className={styles.rowUploadBtn}
+                              onClick={() => openUploadModal(item.id)}
+                              disabled={item.status === 'Lunas' || Boolean(pembayaranMenunggu)}
+                              title={
+                                item.status === 'Lunas'
+                                  ? 'Tagihan sudah lunas'
+                                  : pembayaranMenunggu
+                                    ? 'Bukti sedang menunggu verifikasi'
+                                    : `Unggah bukti ${getNamaTagihan(item)}`
+                              }
+                            >
+                              {item.status === 'Lunas' ? <FiCheckCircle /> : <FiUpload />}
+                              {pembayaranMenunggu
+                                ? 'Menunggu verifikasi'
+                                : item.status === 'Lunas'
+                                  ? 'Lunas'
+                                  : 'Upload Bukti'}
+                            </button>
                           </td>
                         </tr>
                       );

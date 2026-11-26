@@ -1,9 +1,11 @@
 import { useState, type ReactNode } from 'react';
-import { FiBell, FiMapPin, FiCalendar, FiUser, FiChevronRight, FiCheckCircle, FiBriefcase } from 'react-icons/fi';
+import { FiMapPin, FiCalendar, FiUser, FiChevronRight, FiCheckCircle, FiBriefcase } from 'react-icons/fi';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Link } from 'react-router-dom';
 import Sidebar from '../../../components/layout/Sidebar';
 import Footer from '../../../components/layout/Footer';
+import NotificationBell from '../../../components/layout/NotificationBell';
+import ProfileMenu from '../../../components/layout/ProfileMenu';
 import styles from './DashboardSiswa.module.css';
 
 import { useApi, type UseApiResult } from '../../../hooks/useApi';
@@ -25,7 +27,6 @@ import {
   formatRupiah,
   formatTanggal,
   formatTanggalSingkat,
-  getInisial,
 } from '../../../utils/formatter';
 import {
   TAGIHAN_PAGE_SIZE,
@@ -147,6 +148,7 @@ interface Agenda {
   tanggal: string;
   judul: string;
   deskripsi: string;
+  path: string;
 }
 
 /** Agenda disusun dari data nyata: batas pembayaran tagihan dan akhir periode PKL */
@@ -156,6 +158,7 @@ function buildAgenda(belumDibayar: readonly Tagihan[], pkl: PklSiswa | undefined
     tanggal: item.jatuhTempo,
     judul: item.status === 'Jatuh Tempo' ? 'Tagihan sudah jatuh tempo' : 'Batas pembayaran',
     deskripsi: getNamaTagihan(item),
+    path: '/siswa/keuangan',
   }));
 
   if (pkl && pkl.status !== 'Selesai') {
@@ -165,6 +168,7 @@ function buildAgenda(belumDibayar: readonly Tagihan[], pkl: PklSiswa | undefined
       tanggal: pkl.periode.selesai,
       judul: 'Akhir periode PKL',
       deskripsi: perluLaporan ? 'Unggah laporan akhir dalam format PDF' : 'Periode PKL berakhir',
+      path: '/siswa/pkl',
     });
   }
 
@@ -249,30 +253,19 @@ export default function DashboardSiswa() {
           <div className={styles.breadcrumb}>
             <span>Dashboard Siswa</span> <FiChevronRight /> <strong>Beranda</strong>
           </div>
-          
           <div className={styles.headerActions}>
-            <FiBell className={styles.bellIcon} />
-            
-            <div className={styles.avatar} role="img" aria-label={`Profil ${user?.nama ?? 'Siswa'}`}>
-              {getInisial(user?.nama)}
-            </div>
+            <NotificationBell />
+            <ProfileMenu />
           </div>
         </header>
 
         <div className={styles.contentWrapper}>
-          {/* --- Header Section & Profile Card --- */}
+          {/* --- Judul Halaman --- */}
           <div className={styles.topSection}>
             <div className={styles.pageTitle}>
               <p className={styles.subtitle}>PORTAL AKADEMIK / SISWA</p>
               <h1>Beranda</h1>
               <p className={styles.description}>Semua informasi sekolahmu, dalam satu tempat.</p>
-            </div>
-            
-            <div className={styles.profileCard}>
-              <div className={styles.profileInfo}>
-                <strong>{user?.nama ?? 'Siswa'}</strong>
-                <span>Akun siswa</span>
-              </div>
             </div>
           </div>
 
@@ -464,7 +457,7 @@ export default function DashboardSiswa() {
                   {agenda.map((item) => {
                     const { tgl, bulan: bulanSingkat } = formatTanggalSingkat(item.tanggal);
                     return (
-                      <div className={styles.agendaItem} key={item.id}>
+                      <Link className={styles.agendaItem} key={item.id} to={item.path}>
                         <div className={styles.dateBox}>
                           <strong>{tgl}</strong>
                           <span>{bulanSingkat}</span>
@@ -474,7 +467,7 @@ export default function DashboardSiswa() {
                           <p>{item.deskripsi}</p>
                         </div>
                         <FiChevronRight className={styles.agendaArrow} />
-                      </div>
+                      </Link>
                     );
                   })}
                 </div>

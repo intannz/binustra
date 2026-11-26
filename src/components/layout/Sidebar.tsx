@@ -21,6 +21,8 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const { role: authRole, logout } = useAuth();
   const role = authRole === 'guru' ? 'guru' : 'siswa';
+  const hasProfileMenu =
+    location.pathname.startsWith('/siswa/') || location.pathname.startsWith('/guru/');
   const links = [
     { path: `/${role}/dashboard`, label: 'Beranda', icon: FiHome },
     { path: `/${role}/pkl`, label: 'Praktik Kerja Lapangan', icon: FiBriefcase },
@@ -98,15 +100,17 @@ export default function Sidebar() {
             </Link>
           ))}
         </nav>
-        <button
-          type="button"
-          className={styles.logoutButton}
-          onClick={handleLogout}
-          title={collapsed ? 'Keluar' : undefined}
-        >
-          <FiLogOut className={styles.icon} />
-          <span className={styles.linkLabel}>Keluar</span>
-        </button>
+        {!hasProfileMenu && (
+          <button
+            type="button"
+            className={styles.logoutButton}
+            onClick={handleLogout}
+            title={collapsed ? 'Keluar' : undefined}
+          >
+            <FiLogOut className={styles.icon} />
+            <span className={styles.linkLabel}>Keluar</span>
+          </button>
+        )}
       </aside>
     </>
   );

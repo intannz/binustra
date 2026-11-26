@@ -7,7 +7,6 @@ import styles from './Login.module.css';
 
 import { useAuth } from '../../hooks/useAuth';
 import { isApiError } from '../../services/api';
-import { SEEDER_ACCOUNTS, type SeederAccount } from '../../utils/constants';
 import { getDashboardPath } from '../../utils/routes';
 
 import logo from '../../assets/logo.png';
@@ -45,12 +44,6 @@ export default function Login() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleQuickFill = (account: SeederAccount) => {
-    setError('');
-    setNomorInduk(account.username);
-    setPassword(account.password);
   };
 
   const notice = error || (sessionExpired ? 'Sesi berakhir. Silakan masuk kembali.' : '');
@@ -113,35 +106,11 @@ export default function Login() {
             </button>
           </form>
 
-          <div className={styles.divider}>
-            <span>akun uji coba</span>
-          </div>
-
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '12px' }}>
-            {SEEDER_ACCOUNTS.map((acc) => (
-              <button
-                key={acc.id}
-                type="button"
-                onClick={() => handleQuickFill(acc)}
-                style={{
-                  padding: '6px 10px',
-                  fontSize: '12px',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db',
-                  background: '#f9fafb',
-                  cursor: 'pointer',
-                }}
-              >
-                {acc.nama.split(',')[0]} ({acc.role})
-              </button>
-            ))}
-          </div>
-
           <div className={styles.supportInfo}>
             <FiHeadphones className={styles.supportIcon} />
             <div className={styles.supportText}>
               <span>Mengalami kendala saat masuk?</span>
-              <a href="mailto:it-support@binustra.sch.id">Hubungi IT Support sekolah.</a>
+              <span>Hubungi IT Support sekolah.</span>
             </div>
           </div>
         </div>

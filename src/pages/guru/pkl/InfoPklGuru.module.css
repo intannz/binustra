@@ -547,3 +547,261 @@
     row-gap: 12px;
   }
 }
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.tab,
+.activeTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.activeTab {
+  border-bottom-color: #2b5c8f;
+  color: #2b5c8f;
+}
+
+.tabCount {
+  display: inline-grid;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  place-items: center;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 11px;
+}
+
+.mitraCards {
+  display: grid;
+  gap: 16px;
+  padding: 0 24px;
+}
+
+.mitraCard {
+  padding: 20px;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+}
+
+.mitraCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mitraCompanyIcon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2b5c8f;
+  font-size: 18px;
+}
+
+.mitraCompany {
+  flex: 1;
+  min-width: 0;
+}
+
+.mitraCompany h4 {
+  margin: 0 0 4px;
+  color: var(--text-main);
+  font-size: 15px;
+}
+
+.mitraCompany p,
+.mitraEmpty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.mitraStatus {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mitraWaiting {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.mitraApproved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.mitraRejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.mitraDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 20px;
+  margin: 0;
+}
+
+.mitraDetails div {
+  display: grid;
+  gap: 4px;
+}
+
+.mitraDetails strong {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.mitraDetails span {
+  color: var(--text-main);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.mitraNote {
+  margin: 16px 0 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--text-main);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.mitraNoteField {
+  margin-top: 16px;
+}
+
+.mitraNoteField label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.mitraNoteField textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.mitraActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.approveMitraBtn,
+.rejectMitraBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.approveMitraBtn {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.rejectMitraBtn {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.mitraSuccess,
+.mitraError {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 24px 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mitraSuccess {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.mitraError {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.mitraEmpty {
+  padding: 8px 24px 12px;
+}
+
+@media (max-width: 600px) {
+  .tabs {
+    overflow-x: auto;
+  }
+
+  .tab,
+  .activeTab {
+    white-space: nowrap;
+  }
+
+  .mitraCards {
+    padding: 0 16px;
+  }
+
+  .mitraCard {
+    padding: 16px;
+  }
+
+  .mitraDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .mitraCardHeader {
+    align-items: flex-start;
+  }
+
+  .mitraStatus {
+    margin-left: auto;
+  }
+}

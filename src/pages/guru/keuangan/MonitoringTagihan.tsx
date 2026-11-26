@@ -1,18 +1,18 @@
 import { useState, type FormEvent } from 'react';
 import { 
-  FiBell, FiChevronRight, FiSearch, FiUsers, 
-  FiCheckCircle, FiAlertCircle, FiMessageCircle, FiRefreshCw 
+  FiChevronRight, FiSearch, FiUsers,
+  FiCheckCircle, FiAlertCircle, FiCopy, FiRefreshCw
 } from 'react-icons/fi';
 import Sidebar from '../../../components/layout/Sidebar';
 import Footer from '../../../components/layout/Footer';
+import NotificationBell from '../../../components/layout/NotificationBell';
+import ProfileMenu from '../../../components/layout/ProfileMenu';
 import styles from './MonitoringTagihan.module.css';
 
 import { useApi } from '../../../hooks/useApi';
-import { useAuth } from '../../../hooks/useAuth';
 import type { ApiError } from '../../../services/api';
 import { getStatusTagihanKelas } from '../../../services/keuangan.service';
 import { describeError, getKelasIdTersimpan, isUuid, simpanKelasId } from '../../../utils/absensi';
-import { getInisial } from '../../../utils/formatter';
 import { STATUS_KELAS_PAGE_SIZE } from '../../../utils/keuangan';
 
 /* ========================================================================== */
@@ -43,8 +43,6 @@ function describeStatusKelasError(error: ApiError): { message: string; canRetry:
 /* ========================================================================== */
 
 export default function MonitoringTagihan() {
-  const { user } = useAuth();
-
   /* ---------- Kelas ---------- */
   const [kelasId, setKelasId] = useState(getKelasIdTersimpan);
   const [kelasDraft, setKelasDraft] = useState(kelasId);
@@ -52,7 +50,7 @@ export default function MonitoringTagihan() {
 
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
-  const [reminderMessage, setReminderMessage] = useState('');
+  const [copyFeedback, setCopyFeedback] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
   const statusKey = kelasId !== '' ? `guru:keuangan:status:${kelasId}:${page}` : null;
   const statusApi = useApi(statusKey, (signal) =>
@@ -95,11 +93,38 @@ export default function MonitoringTagihan() {
     setKelasId(trimmed);
     setKelasDraft(trimmed);
     setPage(1);
-    setReminderMessage('');
+    setCopyFeedback(null);
   };
 
-  const handleIngatkan = (nama: string) => {
-    setReminderMessage(`Pengingat untuk orang tua ${nama} telah dicatat.`);
+  const handleCopyReminder = async (nama: string, status: string) => {
+    const message = [
+      `Yth. ${nama}, berdasarkan data administrasi kelas terdapat tunggakan dengan status ${status}.`,
+      'Mohon memeriksa rincian tagihan dan menindaklanjuti pembayaran melalui Tata Usaha/Bendahara sekolah.',
+      'Terima kasih.',
+    ].join(' ');
+
+    if (!navigator.clipboard) {
+      setCopyFeedback({
+        kind: 'error',
+        text: 'Fitur salin tidak tersedia di browser ini. Silakan coba browser yang mendukung clipboard.',
+      });
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopyFeedback({
+        kind: 'success',
+        text: `Template pengingat untuk ${nama} berhasil disalin ke clipboard (siap ditempel ke WhatsApp).`,
+      });
+    } catch (error) {
+      setCopyFeedback({
+        kind: 'error',
+        text: error instanceof Error
+          ? `Pengingat tidak dapat disalin: ${error.message}`
+          : 'Pengingat tidak dapat disalin. Silakan coba lagi.',
+      });
+    }
   };
 
   return (
@@ -113,8 +138,8 @@ export default function MonitoringTagihan() {
             <span>Dashboard Guru</span> <FiChevronRight /> <strong>Keuangan</strong>
           </div>
           <div className={styles.headerActions}>
-            <FiBell className={styles.bellIcon} />
-            <div className={styles.avatar}>{getInisial(user?.nama)}</div>
+            <NotificationBell />
+            <ProfileMenu />
           </div>
         </header>
 
@@ -122,8 +147,10 @@ export default function MonitoringTagihan() {
           {/* --- Judul Halaman --- */}
           <div className={styles.pageTitleBox}>
             <p className={styles.subtitle}>PORTAL AKADEMIK / Guru</p>
-            <h1>Monitoring Tagihan Kelas</h1>
-            <p className={styles.description}>Pantau status pembayaran siswa di kelas perwalian Anda untuk memberikan pengingat.</p>
+            <h1>Monitoring Administrasi Kelas</h1>
+            <p className={styles.description}>
+              Data disinkronkan secara read-only dari bagian Keuangan/TU. Wali kelas dapat memantau siswa yang memiliki tunggakan untuk tindak lanjut pembinaan.
+            </p>
           </div>
 
           {/* --- Pilih Kelas --- */}
@@ -189,7 +216,12 @@ export default function MonitoringTagihan() {
           {/* --- Tabel Daftar Tagihan --- */}
           <div className={styles.cardFull}>
             <div className={styles.cardHeaderFlex}>
-              <h3>Status Pembayaran Siswa</h3>
+              <div>
+                <h3>Status Pembayaran Siswa</h3>
+                <p className={styles.cardSubtitle}>
+                  Gunakan tombol Salin Pengingat untuk menyalin format pesan tagihan ke clipboard sebelum dikirim ke siswa atau orang tua.
+                </p>
+              </div>
               <div className={styles.searchContainer}>
                 <FiSearch className={styles.searchIcon} />
                 <input 
@@ -201,7 +233,15 @@ export default function MonitoringTagihan() {
                 />
               </div>
             </div>
-            {reminderMessage && <p role="status">{reminderMessage}</p>}
+            {copyFeedback && (
+              <p
+                className={copyFeedback.kind === 'success' ? styles.copySuccess : styles.copyError}
+                role={copyFeedback.kind === 'success' ? 'status' : 'alert'}
+              >
+                {copyFeedback.kind === 'success' && <FiCheckCircle aria-hidden="true" />}
+                {copyFeedback.text}
+              </p>
+            )}
 
             <div className={styles.tableContainer}>
               <table className={styles.table}>
@@ -232,12 +272,14 @@ export default function MonitoringTagihan() {
                         </td>
                         <td>
                           <button 
+                            type="button"
                             className={styles.btnReminder}
-                            onClick={() => handleIngatkan(item.nama)}
+                            onClick={() => { void handleCopyReminder(item.nama, item.status); }}
                             disabled={item.status === 'Lunas'}
-                            title={item.status === 'Lunas' ? 'Sudah lunas' : 'Kirim pengingat'}
+                            title={item.status === 'Lunas' ? 'Sudah lunas' : 'Salin template pengingat'}
+                            aria-label={`Salin pengingat untuk ${item.nama}`}
                           >
-                            <FiMessageCircle /> Ingatkan
+                            <FiCopy /> Salin Pengingat
                           </button>
                         </td>
                       </tr>

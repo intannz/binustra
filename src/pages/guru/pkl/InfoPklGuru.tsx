@@ -1,14 +1,15 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import {
-  FiBell, FiChevronRight, FiSearch, FiX, FiFileText, FiCheckCircle,
-  FiDownload, FiAlertCircle, FiRefreshCw
+  FiChevronRight, FiSearch, FiX, FiFileText, FiCheckCircle,
+  FiDownload, FiAlertCircle, FiRefreshCw, FiBriefcase
 } from 'react-icons/fi';
 import Sidebar from '../../../components/layout/Sidebar';
 import Footer from '../../../components/layout/Footer';
+import NotificationBell from '../../../components/layout/NotificationBell';
+import ProfileMenu from '../../../components/layout/ProfileMenu';
 import styles from './InfoPklGuru.module.css';
 
 import { useApi } from '../../../hooks/useApi';
-import { useAuth } from '../../../hooks/useAuth';
 import { getFieldErrors, isApiError } from '../../../services/api';
 import {
   downloadLaporanPkl,
@@ -26,7 +27,15 @@ import type {
   StatusLaporan,
   StatusPkl,
 } from '../../../types/portal.types';
-import { formatNilai, formatTanggal, getInisial } from '../../../utils/formatter';
+import { formatNilai, formatTanggal } from '../../../utils/formatter';
+import {
+  getPengajuanMitra,
+  putuskanPengajuanMitra,
+  subscribePengajuanMitra,
+  type PengajuanMitra,
+  type StatusPengajuanMitra,
+} from '../../../utils/pklMitraStorage';
+import { getStoredNilaiPklGuru, saveStoredNilaiPklGuru } from '../../../utils/pklNilaiStorage';
 
 /* ========================================================================== */
 /* Konstanta & helper                                                         */
@@ -37,6 +46,33 @@ const PAGE_SIZE = 100;
 
 /** Batas panjang catatan review di G-PKL-3 */
 const MAX_CATATAN = 1000;
+
+function readMitraEntries(): { entries: PengajuanMitra[]; error: string | null } {
+  try {
+    return { entries: getPengajuanMitra(), error: null };
+  } catch (error) {
+    return {
+      entries: [],
+      error: error instanceof Error ? error.message : 'Data pengajuan mitra tidak dapat dibaca.',
+    };
+  }
+}
+
+interface NilaiStorageState {
+  values: Record<string, NilaiPklGuru | undefined>;
+  error: string | null;
+}
+
+function readNilaiStorage(): NilaiStorageState {
+  try {
+    return { values: getStoredNilaiPklGuru(), error: null };
+  } catch (error) {
+    return {
+      values: {},
+      error: error instanceof Error ? error.message : 'Nilai PKL tersimpan tidak dapat dibaca.',
+    };
+  }
+}
 
 const STATUS_PKL_LABEL: Record<StatusPkl, string> = {
   'Belum Dimulai': 'Belum dimulai',
@@ -522,17 +558,26 @@ function ReviewModal({ siswa, nilaiTersimpan, onClose, onChanged, onNilaiSaved }
 /* ========================================================================== */
 
 export default function InfoPklGuru() {
-  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'siswa' | 'mitra'>('siswa');
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  // Nilai akhir hasil input pada sesi ini, dikunci per siswaId (G-PKL-1 tidak memuat nilai)
-  const [nilaiBySiswa, setNilaiBySiswa] = useState<Record<string, NilaiPklGuru | undefined>>({});
+  const [nilaiStorage, setNilaiStorage] = useState<NilaiStorageState>(readNilaiStorage);
+  const nilaiBySiswa = nilaiStorage.values;
+  const [mitraState, setMitraState] = useState(readMitraEntries);
+  const [catatanMitraById, setCatatanMitraById] = useState<Record<string, string>>({});
+  const [mitraFeedback, setMitraFeedback] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
   const list = useApi(`guru:pkl:siswa:${page}`, (signal) =>
     getSiswaBimbingan({ page, limit: PAGE_SIZE }, { signal }),
   );
 
+  useEffect(
+    () => subscribePengajuanMitra(() => setMitraState(readMitraEntries())),
+    [],
+  );
+
+  const pengajuanMitraMenunggu = mitraState.entries.filter((entry) => entry.status === 'Menunggu');
   const students = list.data?.data ?? [];
   const meta = list.data?.meta;
   const totalPages = meta ? Math.max(1, Math.ceil(meta.total / Math.max(meta.limit, 1))) : 1;
@@ -545,8 +590,43 @@ export default function InfoPklGuru() {
   const selectedSiswa = students.find((siswa) => siswa.siswaId === selectedId) ?? null;
 
   const handleNilaiSaved = (nilai: NilaiPklGuru) => {
-    setNilaiBySiswa((current) => ({ ...current, [nilai.siswaId]: nilai }));
+    const updatedValues = { ...nilaiBySiswa, [nilai.siswaId]: nilai };
+    try {
+      saveStoredNilaiPklGuru(updatedValues);
+      setNilaiStorage({ values: updatedValues, error: null });
+    } catch (error) {
+      setNilaiStorage({
+        values: updatedValues,
+        error: error instanceof Error
+          ? `Nilai tersimpan di server, tetapi salinan lokal gagal disimpan: ${error.message}`
+          : 'Nilai tersimpan di server, tetapi salinan lokal gagal disimpan.',
+      });
+    }
   };
+
+  const handleDecisionMitra = (
+    id: string,
+    status: Exclude<StatusPengajuanMitra, 'Menunggu'>,
+  ) => {
+    try {
+      const updated = putuskanPengajuanMitra(id, status, catatanMitraById[id] ?? '');
+      setMitraState((current) => ({
+        entries: current.entries.map((entry) => (entry.id === id ? updated : entry)),
+        error: null,
+      }));
+      setMitraFeedback({
+        kind: 'success',
+        text: `Pengajuan ${updated.namaPerusahaan} ${status.toLocaleLowerCase('id-ID')}.`,
+      });
+    } catch (error) {
+      setMitraFeedback({
+        kind: 'error',
+        text: error instanceof Error ? error.message : 'Keputusan pengajuan tidak dapat disimpan.',
+      });
+    }
+  };
+
+  const reloadMitraEntries = () => setMitraState(readMitraEntries());
 
   let emptyMessage = 'Belum ada siswa bimbingan.';
   if (list.error) emptyMessage = 'Data siswa bimbingan belum dapat ditampilkan.';
@@ -563,8 +643,8 @@ export default function InfoPklGuru() {
             <span>Dashboard Guru</span> <FiChevronRight /> <strong>Praktik Kerja Lapangan</strong>
           </div>
           <div className={styles.headerActions}>
-            <FiBell className={styles.bellIcon} />
-            <div className={styles.avatar}>{getInisial(user?.nama)}</div>
+            <NotificationBell />
+            <ProfileMenu />
           </div>
         </header>
 
@@ -575,9 +655,41 @@ export default function InfoPklGuru() {
             <h1>Praktik Kerja Lapangan</h1>
             <p className={styles.description}>Dampingi, tinjau laporan, dan nilai perjalanan PKL siswa.</p>
           </div>
+          {nilaiStorage.error && (
+            <div className={styles.alertErrorBar} role="alert">
+              <FiAlertCircle />
+              <span>{nilaiStorage.error}</span>
+            </div>
+          )}
 
-          {/* --- Tabel Daftar Siswa Bimbingan --- */}
-          <div className={styles.cardFull}>
+          <div className={styles.tabs} role="tablist" aria-label="Pengelolaan PKL">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'siswa'}
+              aria-controls="pkl-siswa-panel"
+              className={activeTab === 'siswa' ? styles.activeTab : styles.tab}
+              onClick={() => setActiveTab('siswa')}
+            >
+              Daftar siswa bimbingan
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'mitra'}
+              aria-controls="pkl-mitra-panel"
+              className={activeTab === 'mitra' ? styles.activeTab : styles.tab}
+              onClick={() => setActiveTab('mitra')}
+            >
+              Pengajuan Mitra PKL
+              {pengajuanMitraMenunggu.length > 0 && (
+                <span className={styles.tabCount}>{pengajuanMitraMenunggu.length}</span>
+              )}
+            </button>
+          </div>
+
+          {activeTab === 'siswa' ? (
+            <div id="pkl-siswa-panel" className={styles.cardFull} role="tabpanel">
             <h3>Daftar siswa bimbingan</h3>
 
             <div className={styles.searchContainer}>
@@ -674,6 +786,102 @@ export default function InfoPklGuru() {
               </div>
             )}
           </div>
+          ) : (
+            <section id="pkl-mitra-panel" className={styles.cardFull} role="tabpanel">
+              <h3>Pengajuan Mitra PKL</h3>
+              {mitraState.error && (
+                <div className={styles.alertErrorBar} role="alert">
+                  <FiAlertCircle />
+                  <span>{mitraState.error}</span>
+                  <button type="button" className={styles.retryBtn} onClick={reloadMitraEntries}>
+                    <FiRefreshCw /> Coba lagi
+                  </button>
+                </div>
+              )}
+              {mitraFeedback && (
+                <p
+                  className={mitraFeedback.kind === 'success' ? styles.mitraSuccess : styles.mitraError}
+                  role={mitraFeedback.kind === 'success' ? 'status' : 'alert'}
+                >
+                  {mitraFeedback.kind === 'success' && <FiCheckCircle aria-hidden="true" />}
+                  {mitraFeedback.text}
+                </p>
+              )}
+              {mitraState.entries.length === 0 && !mitraState.error ? (
+                <p className={styles.mitraEmpty}>Belum ada pengajuan mitra PKL.</p>
+              ) : (
+                <div className={styles.mitraCards}>
+                  {mitraState.entries.map((entry) => {
+                    const isWaiting = entry.status === 'Menunggu';
+                    const statusClass =
+                      entry.status === 'Menunggu'
+                        ? styles.mitraWaiting
+                        : entry.status === 'Disetujui'
+                          ? styles.mitraApproved
+                          : styles.mitraRejected;
+
+                    return (
+                      <article key={entry.id} className={styles.mitraCard}>
+                        <div className={styles.mitraCardHeader}>
+                          <div className={styles.mitraCompanyIcon}><FiBriefcase /></div>
+                          <div className={styles.mitraCompany}>
+                            <h4>{entry.namaPerusahaan}</h4>
+                            <p>{entry.namaSiswa}</p>
+                          </div>
+                          <span className={`${styles.mitraStatus} ${statusClass}`}>{entry.status}</span>
+                        </div>
+                        <div className={styles.mitraDetails}>
+                          <div><strong>Bidang</strong><span>{entry.bidang}</span></div>
+                          <div><strong>Alamat</strong><span>{entry.alamat}</span></div>
+                          <div>
+                            <strong>Periode</strong>
+                            <span>{formatTanggal(entry.tanggalMulai)} - {formatTanggal(entry.tanggalSelesai)}</span>
+                          </div>
+                        </div>
+                        {entry.catatanGuru && (
+                          <p className={styles.mitraNote}><strong>Catatan guru:</strong> {entry.catatanGuru}</p>
+                        )}
+                        {isWaiting && (
+                          <>
+                            <div className={styles.mitraNoteField}>
+                              <label htmlFor={`catatan-mitra-${entry.id}`}>Catatan untuk siswa (opsional)</label>
+                              <textarea
+                                id={`catatan-mitra-${entry.id}`}
+                                rows={2}
+                                value={catatanMitraById[entry.id] ?? ''}
+                                onChange={(event) =>
+                                  setCatatanMitraById((current) => ({
+                                    ...current,
+                                    [entry.id]: event.target.value,
+                                  }))
+                                }
+                              />
+                            </div>
+                            <div className={styles.mitraActions}>
+                              <button
+                                type="button"
+                                className={styles.approveMitraBtn}
+                                onClick={() => handleDecisionMitra(entry.id, 'Disetujui')}
+                              >
+                                <FiCheckCircle /> Setujui
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.rejectMitraBtn}
+                                onClick={() => handleDecisionMitra(entry.id, 'Ditolak')}
+                              >
+                                <FiX /> Tolak
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
 
         </div>
         <Footer />

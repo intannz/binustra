@@ -1,11 +1,13 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import {
-  FiBell, FiChevronRight, FiUpload, FiX, FiUploadCloud, FiFileText,
+  FiChevronRight, FiUpload, FiX, FiUploadCloud, FiFileText,
   FiAlertCircle, FiRefreshCw
 } from 'react-icons/fi';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import Sidebar from '../../../components/layout/Sidebar';
 import Footer from '../../../components/layout/Footer';
+import NotificationBell from '../../../components/layout/NotificationBell';
+import ProfileMenu from '../../../components/layout/ProfileMenu';
 import styles from './RekapAbsensiSiswa.module.css';
 
 import { useApi } from '../../../hooks/useApi';
@@ -34,7 +36,13 @@ import {
   totalRekap,
   type PeriodeSemester,
 } from '../../../utils/absensi';
-import { formatTanggal, getInisial } from '../../../utils/formatter';
+import { formatTanggal } from '../../../utils/formatter';
+import {
+  getStoredIzinSiswa,
+  subscribeStoredIzinSiswa,
+  upsertStoredIzinSiswa,
+  type IzinSiswaTersimpan,
+} from '../../../utils/izinStorage';
 
 /* ========================================================================== */
 /* Konstanta & helper                                                         */
@@ -115,6 +123,23 @@ const EMPTY_IZIN_FORM: IzinForm = {
   tanggalSelesai: '',
   keterangan: '',
 };
+
+interface IzinHistoryState {
+  entries: IzinSiswaTersimpan[];
+  error: string | null;
+}
+
+function readIzinHistory(siswaId: string | undefined): IzinHistoryState {
+  if (!siswaId) return { entries: [], error: null };
+  try {
+    return { entries: getStoredIzinSiswa(siswaId), error: null };
+  } catch (error) {
+    return {
+      entries: [],
+      error: error instanceof Error ? error.message : 'Riwayat pengajuan izin tidak dapat dibaca.',
+    };
+  }
+}
 
 /** Aturan yang sama dengan S-ABS-2, supaya kesalahan umum tertangkap sebelum request dikirim */
 function validateIzin(
@@ -388,13 +413,51 @@ export default function RekapAbsensiSiswa() {
 
   /* ---------- Pengajuan izin ---------- */
   const [isIzinModalOpen, setIsIzinModalOpen] = useState(false);
-  // API belum menyediakan riwayat izin siswa, jadi daftar hanya memuat pengajuan pada sesi ini
-  const [izinTerkirim, setIzinTerkirim] = useState<IzinSiswa[]>([]);
+  const [izinHistory, setIzinHistory] = useState<IzinHistoryState>(() =>
+    readIzinHistory(user?.userId),
+  );
+  const izinTerkirim = izinHistory.entries;
   const [izinNotice, setIzinNotice] = useState<string | null>(null);
 
+  useEffect(() => {
+    const refreshIzinHistory = () => setIzinHistory(readIzinHistory(user?.userId));
+    refreshIzinHistory();
+    return subscribeStoredIzinSiswa(refreshIzinHistory);
+  }, [user?.userId]);
+
   const handleIzinCreated = (izin: IzinSiswa) => {
-    setIzinTerkirim((current) => [izin, ...current]);
-    setIzinNotice('Pengajuan izin berhasil dikirim dan menunggu persetujuan wali kelas.');
+    if (!user) {
+      setIzinHistory((current) => ({
+        ...current,
+        error: 'Pengajuan terkirim, tetapi akun siswa tidak tersedia untuk menyimpan riwayat.',
+      }));
+      setIzinNotice('Pengajuan izin berhasil dikirim.');
+      setIsIzinModalOpen(false);
+      return;
+    }
+
+    const fallbackEntry: IzinSiswaTersimpan = {
+      ...izin,
+      siswaId: user.userId,
+      catatanGuru: null,
+    };
+
+    try {
+      const savedEntry = upsertStoredIzinSiswa(user.userId, izin);
+      setIzinHistory((current) => ({
+        entries: [savedEntry, ...current.entries.filter((item) => item.id !== savedEntry.id)],
+        error: null,
+      }));
+      setIzinNotice('Pengajuan izin berhasil dikirim dan menunggu persetujuan wali kelas.');
+    } catch (error) {
+      setIzinHistory((current) => ({
+        entries: [fallbackEntry, ...current.entries.filter((item) => item.id !== fallbackEntry.id)],
+        error: error instanceof Error
+          ? `Pengajuan berhasil dikirim, tetapi riwayat gagal disimpan di browser: ${error.message}`
+          : 'Pengajuan berhasil dikirim, tetapi riwayat gagal disimpan di browser.',
+      }));
+      setIzinNotice('Pengajuan izin berhasil dikirim.');
+    }
     setIsIzinModalOpen(false);
   };
 
@@ -414,8 +477,8 @@ export default function RekapAbsensiSiswa() {
             <span>Dashboard Siswa</span> <FiChevronRight /> <strong>Absensi</strong>
           </div>
           <div className={styles.headerActions}>
-            <FiBell className={styles.bellIcon} />
-            <div className={styles.avatar}>{getInisial(user?.nama)}</div>
+            <NotificationBell />
+            <ProfileMenu />
           </div>
         </header>
 
@@ -426,6 +489,12 @@ export default function RekapAbsensiSiswa() {
             <h1>Absensi & Kehadiran</h1>
             <p className={styles.description}>Kehadiran yang baik, langkah awal untuk berprestasi</p>
           </div>
+          {izinHistory.error && (
+            <div className={styles.alertErrorBar} role="alert">
+              <FiAlertCircle />
+              <span>{izinHistory.error}</span>
+            </div>
+          )}
 
           {/* --- Top Grid (Statistik & Pengajuan) --- */}
           <div className={styles.gridTop}>
@@ -554,7 +623,7 @@ export default function RekapAbsensiSiswa() {
           <div className={styles.cardFull}>
             <h3>Riwayat Pengajuan Izin</h3>
             <p className={styles.helperText}>
-              Menampilkan pengajuan yang Anda kirim selama sesi ini. Status akhir diputuskan oleh wali kelas.
+              Menampilkan riwayat pengajuan izin yang Anda kirim. Status akhir diperbarui setelah ditinjau wali kelas.
             </p>
             <div className={styles.tableContainer}>
               <table className={styles.table}>
@@ -569,7 +638,7 @@ export default function RekapAbsensiSiswa() {
                 <tbody>
                   {izinTerkirim.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className={styles.stateCell}>Belum ada pengajuan izin pada sesi ini.</td>
+                      <td colSpan={4} className={styles.stateCell}>Belum ada riwayat pengajuan izin.</td>
                     </tr>
                   ) : (
                     izinTerkirim.map((item) => (

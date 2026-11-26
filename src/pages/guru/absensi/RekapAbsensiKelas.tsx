@@ -1,14 +1,15 @@
 import { useState, type FormEvent } from 'react';
 import {
-  FiBell, FiChevronRight, FiCheck, FiImage, FiDownload, FiAlertCircle, FiRefreshCw
+  FiChevronRight, FiCheck, FiImage, FiDownload, FiAlertCircle, FiRefreshCw
 } from 'react-icons/fi';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import Sidebar from '../../../components/layout/Sidebar';
 import Footer from '../../../components/layout/Footer';
+import NotificationBell from '../../../components/layout/NotificationBell';
+import ProfileMenu from '../../../components/layout/ProfileMenu';
 import styles from './RekapAbsensiKelas.module.css';
 
 import { useApi } from '../../../hooks/useApi';
-import { useAuth } from '../../../hooks/useAuth';
 import { getFieldErrors, isApiError } from '../../../services/api';
 import {
   downloadLampiranIzin,
@@ -44,7 +45,8 @@ import {
   toDateInputValue,
   toMonthValue,
 } from '../../../utils/absensi';
-import { formatTanggal, getInisial } from '../../../utils/formatter';
+import { formatTanggal } from '../../../utils/formatter';
+import { syncStoredIzinStatuses, updateStoredIzinStatus } from '../../../utils/izinStorage';
 
 /* ========================================================================== */
 /* Konstanta & helper                                                         */
@@ -412,10 +414,25 @@ function IzinCard() {
   const [statusFilter, setStatusFilter] = useState<StatusIzin>('menunggu');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(null);
 
-  const list = useApi(`guru:izin:${statusFilter}`, (signal) =>
-    getDaftarIzin({ status: statusFilter, page: 1, limit: PAGE_SIZE }, { signal }),
-  );
+  const list = useApi(`guru:izin:${statusFilter}`, async (signal) => {
+    const result = await getDaftarIzin(
+      { status: statusFilter, page: 1, limit: PAGE_SIZE },
+      { signal },
+    );
+    if (!signal.aborted) {
+      try {
+        syncStoredIzinStatuses(result.data);
+        setStorageError(null);
+      } catch (error) {
+        setStorageError(
+          error instanceof Error ? error.message : 'Status riwayat izin siswa gagal disinkronkan.',
+        );
+      }
+    }
+    return result;
+  });
 
   // useApi mempertahankan data lama saat filter berganti, jadi daftar hanya dipakai bila sudah final
   const items = list.loading || list.error ? [] : (list.data?.data ?? []);
@@ -429,6 +446,14 @@ function IzinCard() {
   };
 
   const handleDecided = (updated: IzinDetail) => {
+    try {
+      updateStoredIzinStatus(updated.id, updated.status, updated.catatan);
+      setStorageError(null);
+    } catch (error) {
+      setStorageError(
+        error instanceof Error ? error.message : 'Status riwayat izin siswa gagal diperbarui.',
+      );
+    }
     setNotice(
       updated.status === 'ditolak'
         ? `Izin ${updated.siswa.nama} ditolak.`
@@ -491,6 +516,7 @@ function IzinCard() {
       </div>
 
       {notice && <div className={styles.alertSuccess} role="status">{notice}</div>}
+      {storageError && <div className={styles.alertError} role="alert">{storageError}</div>}
 
       {list.error && (
         <div className={styles.alertError} role="alert">
@@ -523,8 +549,6 @@ function IzinCard() {
 /* ========================================================================== */
 
 export default function RekapAbsensiKelas() {
-  const { user } = useAuth();
-
   const [today] = useState(() => toDateInputValue(new Date()));
 
   /* ---------- Kelas ---------- */
@@ -671,8 +695,8 @@ export default function RekapAbsensiKelas() {
             <span>Dashboard Guru</span> <FiChevronRight /> <strong>Absensi</strong>
           </div>
           <div className={styles.headerActions}>
-            <FiBell className={styles.bellIcon} />
-            <div className={styles.avatar}>{getInisial(user?.nama)}</div>
+            <NotificationBell />
+            <ProfileMenu />
           </div>
         </header>
 

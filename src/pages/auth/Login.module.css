@@ -161,33 +161,13 @@
   background-color: #111d35;
 }
 
-/* --- Divider "atau" --- */
-.divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 24px 0;
-  color: #a0aec0;
-  font-size: 13px;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.divider span {
-  padding: 0 10px;
-}
-
 /* --- Support Section --- */
 .supportInfo {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
+  margin-top: 24px;
 }
 
 .supportIcon {
@@ -203,14 +183,4 @@
 
 .supportText span {
   color: #718096;
-}
-
-.supportText a {
-  color: #2b5c8f;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.supportText a:hover {
-  text-decoration: underline;
 }

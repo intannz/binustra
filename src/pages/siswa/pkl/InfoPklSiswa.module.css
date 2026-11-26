@@ -46,19 +46,6 @@
   color: var(--text-main);
 }
 
-.avatar {
-  background-color: #bfdbfe; /* Warna biru muda pastel avatar */
-  color: #1e3a8a;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 14px;
-}
-
 .contentWrapper {
   padding: 32px 40px;
   flex: 1;
@@ -673,6 +660,47 @@
   margin-top: 4px;
   font-size: 13px;
   color: #991b1b;
+}
+
+.gridTwo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.stateNote {
+  margin-bottom: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.fieldError {
+  margin-top: 6px;
+  color: #b91c1c;
+  font-size: 12px;
+}
+
+.rejectedApplication {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  color: #991b1b;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rejectedApplication p {
+  margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+  .gridTwo {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }
 /* ================= STATE: LOADING, ERROR, DISABLED ================= */
 .badgeDanger {

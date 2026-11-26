@@ -1,12 +1,14 @@
 import { useState, type ReactNode } from 'react';
 import { 
-  FiBell, FiChevronRight, FiCheckCircle, FiUsers, 
+  FiChevronRight, FiCheckCircle, FiUsers,
   FiCalendar, FiFileText, FiUpload, FiCheckSquare 
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import Sidebar from '../../../components/layout/Sidebar';
 import Footer from '../../../components/layout/Footer';
+import NotificationBell from '../../../components/layout/NotificationBell';
+import ProfileMenu from '../../../components/layout/ProfileMenu';
 import styles from './DashboardGuru.module.css';
 
 import { useApi } from '../../../hooks/useApi';
@@ -141,8 +143,8 @@ export default function DashboardGuru() {
             <span>Dashboard Guru</span> <FiChevronRight /> <strong>Beranda</strong>
           </div>
           <div className={styles.headerActions}>
-            <FiBell className={styles.bellIcon} />
-            <div className={styles.avatar}>{getInisial(user?.nama)}</div>
+            <NotificationBell />
+            <ProfileMenu />
           </div>
         </header>
 
